@@ -1,0 +1,15 @@
+{
+  "name": "Theatre!",
+  "description": "RPG Style Dialog Delivery System.",
+  "version": "1.0.0",
+  "author": "Battle-System",
+  "manifest_version": 1,
+  "icon": "/logo.svg",
+  "action": {
+    "title": "Theatre!",
+    "icon": "/logo.svg",
+    "popover": "/",
+    "height": 450,
+    "width": 350
+  }
+}
