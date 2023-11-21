@@ -88,7 +88,7 @@ await OBR.onReady(async () =>
             const code = GetGUID();
             const dialogueBox = {
                 Id: characterSelect.value,
-                Name: target.name,
+                Name: target.text?.plainText ? target.text.plainText : target.name,
                 ImageUrl: target.image.url,
                 Message: messageTextarea.value === "test" ? Constants.FRESHPRINCE : messageTextarea.value,
                 Code: code,
@@ -199,7 +199,7 @@ await OBR.onReady(async () =>
             {
                 const option = document.createElement('option');
                 option.value = item.id;
-                option.text = item.name;
+                option.text = item.text?.plainText ? item.text.plainText : item.name;
                 characterSelect.add(option);
             });
         }
