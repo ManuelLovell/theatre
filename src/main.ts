@@ -117,7 +117,7 @@ await OBR.onReady(async () =>
 
         OBR.scene.items.onChange(async (items) =>
         {
-            sceneItems = items.filter(item => isImage(item)) as Image[];
+            sceneItems = items.filter(item => isImage(item) && item.layer == "CHARACTER" || item.layer == "MOUNT") as Image[];
 
             const itemIds = sceneItems.map(item => item.id);
             const itemNames = sceneItems.map(item => item.text.plainText ? item.text.plainText : item.name);
