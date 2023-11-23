@@ -2,9 +2,12 @@ import OBR, { Image, Metadata, isImage } from '@owlbear-rodeo/sdk';
 import './style.css'
 import { Constants } from './constants';
 import { GetGUID, SetThemeMode } from './utilities';
+import { IDialog, IPlayer } from './interfaces';
 
 let currentRole: "PLAYER" | "GM";
 let currentTheme: "LIGHT" | "DARK";
+let currentId = "";
+let currentPlayers: IPlayer[] = [];
 let oldsceneItemIds: string[] = [];
 let oldsceneItemNames: string[] = [];
 let sceneItems: Image[] = [];
@@ -29,6 +32,7 @@ await OBR.onReady(async () =>
     async function StartThreatre()
     {
         currentRole = await OBR.player.getRole();
+        currentId = await OBR.player.getId();
         currentTheme = (await OBR.theme.getTheme()).mode;
         SetThemeMode(currentTheme, document);
 
@@ -42,35 +46,48 @@ await OBR.onReady(async () =>
                     </ul>
                 </div>`;
             return;
+            /// At this point if you are not a GM
+            /// You are done
         }
 
         document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <div id="bannerText"></div>
-        <label id="characterLabel" for="CharacterSelect">Character:</label>
-        <select id="CharacterSelect"></select>
-        
-        <label for="OverrideName">Override Name:</label>
-        <input type="text" id="OverrideName" placeholder="Set a custom name here">
 
-        <label for="MessageType">Message Type:</label>
-        <select id="MessageType">
-          <option value="dialogue">Dialogue</option>
-          <option value="notice">Notice</option>
-        </select>
+        <div class="controlContainer">
+            <label id="characterLabel" for="CharacterSelect">Character Token:</label>
+            <select id="CharacterSelect"></select>
+        </div>
+        <div class="controlContainer">
+            <label for="OverrideName">Override Name:</label>
+            <input type="text" id="OverrideName" placeholder="Set a custom name here">
+        </div>
+
+        <div class="controlContainer">
+            <label for="MessageType">Message Style:</label>
+            <select id="MessageType">
+            <option value="dialogue">Dialogue</option>
+            <option value="notice">Notice</option>
+            </select>
+        </div>
 
         <label for="ViewMessage">View Message on Send</label>
         <input type="checkbox" id="ViewMessage" name="ViewMessage">
         </br>
 
-        <label for="MessageTextarea">Message:</label>
         <textarea id="MessageTextarea" rows="4" cols="50" placeholder="Enter text here to send a message.\n\rUsing :: will seperate the message into several pages players will need to click through. \n\r Dialogue type displays text in normal 'RPG Dialog Style' while Notice displays it in a taller window, good for shops or alerts."></textarea>
         
+        <div class="controlContainer">
+            <label id="playerLabel" for="PlayerSelect">Send To:</label>
+            <select id="PlayerSelect"></select>
+        </div>
+
         <button id="sendMessage">SUBMIT</button>`;
 
         ///Scrolling News
         const textArray = [
             "Type 'test' to send test data",
-            "Welcome to the Theatre! v1.1",
+            "Welcome to the Theatre! v1.11",
+            "Added Player Select",
             "Use :: to seperate pages of text"
         ];
 
@@ -82,6 +99,7 @@ await OBR.onReady(async () =>
         const messageTextarea = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
         const overrideNameInput = document.getElementById('OverrideName') as HTMLInputElement;
         const messageTypeSelect = document.getElementById('MessageType') as HTMLSelectElement;
+        const playerSelect = document.getElementById('PlayerSelect') as HTMLSelectElement;
 
         viewMessageBox.checked = true;
 
@@ -113,8 +131,18 @@ await OBR.onReady(async () =>
         buttonSend.onclick = async () => await SendMessage();
 
         sceneItems = await OBR.scene.items.getItems(x => x.layer === "CHARACTER" && isImage(x));
+        currentPlayers = (await OBR.party.getPlayers()).map(x => { return { id: x.id, name: x.name } });
+
         SetupItemSelect();
 
+        UpdatePlayerSelect();
+
+        OBR.party.onChange((party) =>
+        {
+            currentPlayers = party.map(x => { return { id: x.id, name: x.name } });
+            UpdatePlayerSelect();
+        });
+        
         OBR.scene.items.onChange(async (items) =>
         {
             sceneItems = items.filter(item => isImage(item) && item.layer == "CHARACTER" || item.layer == "MOUNT") as Image[];
@@ -168,6 +196,7 @@ await OBR.onReady(async () =>
                 Name: overrideNameInput.value ? overrideNameInput.value : tokenName,
                 ImageUrl: target.image.url,
                 Message: sendMessage,
+                TargetId: playerSelect.value,
                 Type: messageTypeSelect.value,
                 Code: code,
                 Created: new Date().toLocaleTimeString()
@@ -240,7 +269,11 @@ await OBR.onReady(async () =>
                 const dialogue = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
                 const isDialogue = dialogue.Type == "dialogue" ? true : false;
 
+                // If you're a GM and you don't want to see messages, leave.
                 if (currentRole === "GM" && !viewMessageBox.checked) return;
+
+                // If this message isn't for you, leave.
+                if (currentRole !== "GM" && dialogue.TargetId !== "0000" && dialogue.TargetId !== currentId) return;
 
                 if (newCode !== undefined)
                 {
@@ -328,6 +361,58 @@ await OBR.onReady(async () =>
             }
 
             return true;
+        }
+
+        function UpdatePlayerSelect()
+        {
+            const playerSelect = <HTMLSelectElement>document.getElementById("PlayerSelect");
+            let lastTarget = playerSelect.value;
+
+            const everyoneOption = document.createElement("option");
+            everyoneOption.setAttribute('value', "0000");
+            const everyoneText = document.createTextNode("Everyone");
+            everyoneOption.appendChild(everyoneText);
+
+            //Clear and add Everyone option
+            playerSelect.innerHTML = "";
+            playerSelect.appendChild(everyoneOption);
+
+            currentPlayers.forEach(player =>
+            {
+                let option = document.createElement("option");
+                option.setAttribute('value', player.id);
+
+                let optionText = document.createTextNode(player.name);
+                option.appendChild(optionText);
+
+                playerSelect.appendChild(option);
+            });
+
+            const lastTargetConnected = currentPlayers.find(player => player.id === lastTarget);
+            if (!lastTargetConnected && lastTarget && lastTarget !== "0000")
+            {
+                let option = document.createElement("option");
+                option.setAttribute('value', lastTarget);
+
+                let optionText = document.createTextNode("(Disconnected)");
+                option.appendChild(optionText);
+
+                playerSelect.appendChild(option);
+                playerSelect.value = lastTarget;
+                
+                playerSelect.classList.add("glowing-text");
+                playerSelect.classList.add("glowing-text");
+    
+                setTimeout(function ()
+                {
+                    playerSelect.classList.remove("glowing-text");
+                    playerSelect.classList.remove("glowing-text");
+                }, 5000);
+            }
+            else if (lastTarget)
+            {
+                playerSelect.value = lastTarget;
+            }
         }
     }
 });
