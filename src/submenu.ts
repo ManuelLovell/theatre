@@ -19,48 +19,97 @@ await OBR.onReady(async () =>
     const metadata = await OBR.scene.getMetadata();
     const dialog = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
 
-    document.querySelector<HTMLDivElement>('#sapp')!.innerHTML = `
-    <div class="dialog-box">
-    <div id="imageHolder"><img src="${dialog.ImageUrl}" onerror="this.src='/error.svg';" alt="Character Image" class="character-image"></div>
-    <button id="dialog-close" class="close-icon clickable" type="button"></button>
-        <div class="dialog-content">
+    const windowWidth = await OBR.viewport.getWidth();
+    let mobile = windowWidth < 500;
+
+    if (dialog.Type === "notice") mobile = true;
+
+    const regForm = `
+    <div class="left-column">
+        <img id="dialog-close"" class="close-icon" src="/close.svg">
+        <img id="dialog-forward" class="forward-icon" src="/play.svg" hidden>
+        <div id="imageHolder"><img src="${dialog.ImageUrl}" onerror="this.src='/error.svg';" alt="Character Image" class="character-image"></div>
+    </div>
+    <div class="right-column">
+        <div class="upper-part">
             <div class="character-name">${dialog.Name}</div>
-            <div class="dialog-text">
-                <p id="messageBody" class="dialog-text-body"></p>
-            </div>
         </div>
-        <img id="dragon" class="dragon" src="/dragon.svg" hidden>
+        <div class="lower-part">
+            <div id="messageBody"></div>
+        </div>
+    </div>
+    `;
+    const mobForm = `
+    <div class="top-container">
+        <img id="dialog-close"" class="close-icon" src="/close.svg">
+        <img id="dialog-forward" class="mobile-forward-icon" src="/play.svg" hidden>
+        <div class="left-top">
+            <div id="imageHolder"><img src="${dialog.ImageUrl}" onerror="this.src='/error.svg';" alt="Character Image" class="character-image"></div>
+        </div>
+        <div class="right-top">
+            <div class="character-name">${dialog.Name}</div>
+        </div>
+    </div>
+    <div class="bottom-container">
+        <div id="messageBody"></div>
     </div>
     `;
 
+    document.querySelector<HTMLDivElement>('#sapp')!.innerHTML = mobile ? mobForm : regForm;
+    if (dialog.Type === "notice")
+    {
+        document.querySelector<HTMLDivElement>('#sapp')!.style.flexDirection = "column";
+        document.querySelector<HTMLDivElement>('.bottom-container')!.style.flex = "1";
+    }
+
+
     const messageArea = document.getElementById("messageBody")!;
     const closeButton = document.getElementById("dialog-close")! as HTMLInputElement;
-    closeButton.textContent = "X";
+    closeButton.src = "/close.svg";
     closeButton.onclick = async () =>
     {
         await OBR.popover.close(Constants.EXTENSIONID);
     };
 
+    const segmentedMessage = dialog.Message.split("::");
+    let pageNumber = 0;
+
     function displayCharacter(index: number)
     {
-        if (index < dialog.Message.length)
+        if (index < segmentedMessage[pageNumber].length)
         {
-            messageArea.innerHTML += dialog.Message.charAt(index);
+            messageArea.innerHTML += segmentedMessage[pageNumber].charAt(index);
             setTimeout(function ()
             {
                 displayCharacter(index + 1);
-            }, 25);
+            }, 15);
         }
         else
         {
-            const dragon = document.getElementById('dragon')!;
-            setInterval(function ()
+            const playButton = document.getElementById('dialog-forward')!;
+            if ((pageNumber + 1) === segmentedMessage.length)
             {
-                dragon.hidden = dragon.hidden === true ? false: true;
-            }, 500);
+                playButton.hidden = true;
+                playButton.classList.remove('glow-image');
+                closeButton.classList.add('glow-image');
+            }
+            else
+            {
+                playButton.hidden = false;
+                playButton.classList.add('glow-image');
+                playButton.onclick = () =>
+                {
+                    messageArea.innerHTML = "";
+                    pageNumber++; // Increment the page.
+                    playButton.hidden = true;
+                    playButton.classList.remove('glow-image');
+                    displayCharacter(0);
+                };
+            }
         }
     }
 
-    // Begin Typing
+    // Begin Displaying Message
+
     displayCharacter(0);
 });
