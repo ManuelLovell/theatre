@@ -20,7 +20,7 @@ await OBR.onReady(async () =>
     const dialog = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
 
     const windowWidth = await OBR.viewport.getWidth();
-    let mobile = windowWidth < 500;
+    let mobile = windowWidth < 600;
 
     if (dialog.Type === "notice") mobile = true;
 
