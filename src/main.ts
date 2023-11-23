@@ -6,6 +6,7 @@ import { GetGUID, SetThemeMode } from './utilities';
 let currentRole: "PLAYER" | "GM";
 let currentTheme: "LIGHT" | "DARK";
 let oldsceneItemIds: string[] = [];
+let oldsceneItemNames: string[] = [];
 let sceneItems: Image[] = [];
 let lastCode = "";
 let messageCounter: { [key: string]: string } = {};
@@ -45,11 +46,11 @@ await OBR.onReady(async () =>
 
         document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <div id="bannerText"></div>
-        <label for="CharacterSelect">Character:</label>
+        <label id="characterLabel" for="CharacterSelect">Character:</label>
         <select id="CharacterSelect"></select>
         
         <label for="OverrideName">Override Name:</label>
-        <input type="text" id="OverrideName" placeholder="Enter text to use a custom name">
+        <input type="text" id="OverrideName" placeholder="Set a custom name here">
 
         <label for="MessageType">Message Type:</label>
         <select id="MessageType">
@@ -76,6 +77,12 @@ await OBR.onReady(async () =>
         let currentIndex = 0;
         const textContainer = document.getElementById("bannerText")!;
         const viewMessageBox = document.getElementById('ViewMessage') as HTMLInputElement;
+        const characterSelectLabel = document.getElementById('characterLabel') as HTMLSelectElement;
+        const characterSelect = document.getElementById('CharacterSelect') as HTMLSelectElement;
+        const messageTextarea = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
+        const overrideNameInput = document.getElementById('OverrideName') as HTMLInputElement;
+        const messageTypeSelect = document.getElementById('MessageType') as HTMLSelectElement;
+
         viewMessageBox.checked = true;
 
         function fadeOut()
@@ -105,31 +112,36 @@ await OBR.onReady(async () =>
         const buttonSend = document.getElementById('sendMessage') as HTMLButtonElement;
         buttonSend.onclick = async () => await SendMessage();
 
-        //const userId = await OBR.player.getId();
-
         sceneItems = await OBR.scene.items.getItems(x => x.layer === "CHARACTER" && isImage(x));
         SetupItemSelect();
 
         OBR.scene.items.onChange(async (items) =>
         {
             sceneItems = items.filter(item => isImage(item)) as Image[];
-            const itemIds = sceneItems.map(item => item.id);
 
-            if (itemIds.every(item => oldsceneItemIds.includes(item))) return;
+            const itemIds = sceneItems.map(item => item.id);
+            const itemNames = sceneItems.map(item => item.text.plainText ? item.text.plainText : item.name);
+
+            if (arraysAreEqual(itemIds, oldsceneItemIds) && arraysAreEqual(itemNames, oldsceneItemNames)) return;
 
             SetupItemSelect();
 
             oldsceneItemIds = itemIds;
+            oldsceneItemNames = itemNames;
+
+            characterSelectLabel.classList.add("glowing-text");
+            characterSelect.classList.add("glowing-text");
+
+            setTimeout(function ()
+            {
+                characterSelectLabel.classList.remove("glowing-text");
+                characterSelect.classList.remove("glowing-text");
+            }, 5000);
         });
 
         // Example function to handle the message (replace with your logic)
         async function SendMessage()
         {
-            const characterSelect = document.getElementById('CharacterSelect') as HTMLSelectElement;
-            const messageTextarea = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
-            const overrideNameInput = document.getElementById('OverrideName') as HTMLInputElement;
-            const messageTypeSelect = document.getElementById('MessageType') as HTMLSelectElement;
-
             if (!messageTextarea.value.trim()) return console.log("NO MESSAGE");
 
             const target = sceneItems.find(item => item.id === characterSelect.value);
@@ -270,7 +282,7 @@ await OBR.onReady(async () =>
                             width: windowWidth / 2,
                             hidePaper: true,
                             disableClickAway: true,
-                            anchorPosition: { top: windowHeight / 4, left: windowWidth / 4},
+                            anchorPosition: { top: windowHeight / 4, left: windowWidth / 4 },
                             transformOrigin: {
                                 vertical: "TOP",
                                 horizontal: "LEFT",
@@ -298,6 +310,24 @@ await OBR.onReady(async () =>
                 option.text = item.text?.plainText ? item.text.plainText : item.name;
                 characterSelect.add(option);
             });
+        }
+
+        function arraysAreEqual(array1: string[], array2: string[])
+        {
+            if (array1.length !== array2.length)
+            {
+                return false;
+            }
+
+            for (let i = 0; i < array1.length; i++)
+            {
+                if (array1[i] !== array2[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 });
