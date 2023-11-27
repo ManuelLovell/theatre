@@ -1,4 +1,4 @@
-import{O as s,S as m,C as g}from"./utilities-xCp6wZLy.js";let t;await s.onReady(async()=>{t=(await s.theme.getTheme()).mode,m(t,document),s.theme.onChange(i=>{t=i.mode,m(t,document)});const e=(await s.scene.getMetadata())[`${g.EXTENSIONID}/dialogueBox`];let l=await s.viewport.getWidth()<600;e.Type==="notice"&&(l=!0);const v=`
+import{O as s,S as m,C as g}from"./utilities-1mv2DUmb.js";let t;await s.onReady(async()=>{t=(await s.theme.getTheme()).mode,m(t,document),s.theme.onChange(i=>{t=i.mode,m(t,document)});const e=(await s.scene.getMetadata())[`${g.EXTENSIONID}/dialogueBox`];let l=await s.viewport.getWidth()<600;e.Type==="notice"&&(l=!0);const v=`
     <div class="left-column">
         <img id="dialog-close"" class="close-icon" src="/close.svg">
         <img id="dialog-forward" class="forward-icon" src="/play.svg" hidden>
