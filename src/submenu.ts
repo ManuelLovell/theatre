@@ -2,6 +2,7 @@ import OBR from "@owlbear-rodeo/sdk";
 import { Constants } from "./constants";
 import { SetThemeMode } from "./utilities";
 import './substyle.css'
+import { IDialog } from "./interfaces";
 
 //let currentRole: "PLAYER" | "GM";
 let currentTheme: "LIGHT" | "DARK";
