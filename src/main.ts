@@ -267,7 +267,7 @@ await OBR.onReady(async () =>
             {
                 const newCode = metadata[`${Constants.EXTENSIONID}/dialogueCode`];
                 const dialogue = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
-                const isDialogue = dialogue.Type == "dialogue" ? true : false;
+                const isDialogue = dialogue?.Type == "dialogue" ? true : false;
 
                 // If you're a GM and you don't want to see messages, leave.
                 if (currentRole === "GM" && !viewMessageBox.checked) return;
