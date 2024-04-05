@@ -16,7 +16,8 @@ whatsnew.innerHTML = `
     </br> - At default, Whisper can be seen/heard by people within two squares. It'll be lower-case with a blue border to hint that it's a whisper.
     </br> - Talk can be seen/heard within 6 squares. It's regular cased with a light-grey border.
     </br> - Yell can be seen/heard within 10 squares. It's upper-cased with a red border.
-    </br>
+    </br> 4. TOKEN OWNERSHIP MATTERS.  As a player, you can only post dialgoue for a token you created or have been given ownership to.
+    </br> 5. The GM can see all conversations.  I feel this is needed, in case something should be reacting to your speech. I'm open to suggestion.
     </br> If there are any hiccups, let me know. I'm letting this one fly early as Theatre could use some love, and I think people will enjoy it.
     </br>
     </div>
