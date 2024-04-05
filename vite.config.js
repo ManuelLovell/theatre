@@ -7,6 +7,7 @@ export default {
             input: {
                 main: path.resolve(__dirname, "index.html"),
                 subview: path.resolve(__dirname, 'submenu/subindex.html'),
+                whatsnew: path.resolve(__dirname, 'submenu/whatsnew.html'),
             }
         }
     }

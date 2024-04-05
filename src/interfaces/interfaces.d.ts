@@ -10,7 +10,15 @@ interface IDialog
     Created: string;
 }
 
-export interface IPlayer
+interface IBubble
+{
+    Id: string;
+    Name: string;
+    Message: string;
+    Range: string;
+}
+
+interface IPlayer
 {
     id: string;
     name: string;

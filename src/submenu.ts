@@ -1,23 +1,14 @@
 import OBR from "@owlbear-rodeo/sdk";
-import { Constants } from "./constants";
-import { SetThemeMode } from "./utilities";
-import './substyle.css'
-import { IDialog } from "./interfaces";
+import { Constants } from "./utilities/bsConstants";
+import { SetThemeMode } from "./utilities/bsUtilities";
+import './styles/sub-style.css'
 
 //let currentRole: "PLAYER" | "GM";
-let currentTheme: "LIGHT" | "DARK";
-
 await OBR.onReady(async () =>
 {
-    currentTheme = (await OBR.theme.getTheme()).mode;
+    const currentTheme = (await OBR.theme.getTheme());
     SetThemeMode(currentTheme, document);
-    OBR.theme.onChange((theme) =>
-    {
-        currentTheme = theme.mode;
-        SetThemeMode(currentTheme, document);
-    });
-
-    const metadata = await OBR.scene.getMetadata();
+    const metadata = await OBR.player.getMetadata();
     const dialog = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
 
     const windowWidth = await OBR.viewport.getWidth();
