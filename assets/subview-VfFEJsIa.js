@@ -1,4 +1,4 @@
-import{O as s,S as m,C as g}from"./utilities-1mv2DUmb.js";let t;await s.onReady(async()=>{t=(await s.theme.getTheme()).mode,m(t,document),s.theme.onChange(i=>{t=i.mode,m(t,document)});const e=(await s.scene.getMetadata())[`${g.EXTENSIONID}/dialogueBox`];let l=await s.viewport.getWidth()<600;e.Type==="notice"&&(l=!0);const v=`
+import{O as s,C as n}from"./bsConstants-Cmf1ZMgY.js";import{S as h}from"./bsSceneCache-DLUxYuUr.js";await s.onReady(async()=>{const m=await s.theme.getTheme();h(m,document);const e=(await s.player.getMetadata())[`${n.EXTENSIONID}/dialogueBox`];let r=await s.viewport.getWidth()<600;e.Type==="notice"&&(r=!0);const g=`
     <div class="left-column">
         <img id="dialog-close"" class="close-icon" src="/close.svg">
         <img id="dialog-forward" class="forward-icon" src="/play.svg" hidden>
@@ -12,7 +12,7 @@ import{O as s,S as m,C as g}from"./utilities-1mv2DUmb.js";let t;await s.onReady(
             <div id="messageBody"></div>
         </div>
     </div>
-    `,h=`
+    `,v=`
     <div class="top-container">
         <img id="dialog-close"" class="close-icon" src="/close.svg">
         <img id="dialog-forward" class="mobile-forward-icon" src="/play.svg" hidden>
@@ -26,4 +26,4 @@ import{O as s,S as m,C as g}from"./utilities-1mv2DUmb.js";let t;await s.onReady(
     <div class="bottom-container">
         <div id="messageBody"></div>
     </div>
-    `;document.querySelector("#sapp").innerHTML=l?h:v,e.Type==="notice"&&(document.querySelector("#sapp").style.flexDirection="column",document.querySelector(".bottom-container").style.flex="1");const n=document.getElementById("messageBody"),c=document.getElementById("dialog-close");c.src="/close.svg",c.onclick=async()=>{await s.popover.close(g.EXTENSIONID)};const d=e.Message.split("::");let o=0;function r(i){if(i<d[o].length)n.innerHTML+=d[o].charAt(i),setTimeout(function(){r(i+1)},15);else{const a=document.getElementById("dialog-forward");o+1===d.length?(a.hidden=!0,a.classList.remove("glow-image"),c.classList.add("glow-image")):(a.hidden=!1,a.classList.add("glow-image"),a.onclick=()=>{n.innerHTML="",o++,a.hidden=!0,a.classList.remove("glow-image"),r(0)})}}r(0)});
+    `;document.querySelector("#sapp").innerHTML=r?v:g,e.Type==="notice"&&(document.querySelector("#sapp").style.flexDirection="column",document.querySelector(".bottom-container").style.flex="1");const l=document.getElementById("messageBody"),o=document.getElementById("dialog-close");o.src="/close.svg",o.onclick=async()=>{await s.popover.close(n.EXTENSIONID)};const t=e.Message.split("::");let i=0;function c(d){if(d<t[i].length)l.innerHTML+=t[i].charAt(d),setTimeout(function(){c(d+1)},15);else{const a=document.getElementById("dialog-forward");i+1===t.length?(a.hidden=!0,a.classList.remove("glow-image"),o.classList.add("glow-image")):(a.hidden=!1,a.classList.add("glow-image"),a.onclick=()=>{l.innerHTML="",i++,a.hidden=!0,a.classList.remove("glow-image"),c(0)})}}c(0)});
