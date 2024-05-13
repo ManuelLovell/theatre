@@ -1,4 +1,4 @@
-import{O as o,C as i}from"./bsConstants-Cmf1ZMgY.js";const c=document.querySelector("#bs-whatsnew"),d=document.querySelector("#bs-whatsnew-notes");c.innerHTML=`
+import{O as o,C as i}from"./bsConstants-DqcM23cc.js";const c=document.querySelector("#bs-whatsnew"),d=document.querySelector("#bs-whatsnew-notes");c.innerHTML=`
   <div id="newsContainer">
     <h1>Theatre! 4/4</h1>
     Alright, big Theatre update today.  I've had a lot of requests to allow players to also be able to use this, so I decided to go a step further with changes.

@@ -6,10 +6,10 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Theatre!</title>
-  <script type="module" crossorigin src="/assets/main-CCygY_IF.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/bsConstants-Cmf1ZMgY.js">
-  <link rel="modulepreload" crossorigin href="/assets/bsSceneCache-DLUxYuUr.js">
-  <link rel="stylesheet" crossorigin href="/assets/main-C7-LgHuh.css">
+  <script type="module" crossorigin src="/assets/main-BRVCC-dm.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/bsConstants-DqcM23cc.js">
+  <link rel="modulepreload" crossorigin href="/assets/bsSceneCache-CGFGXyI6.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-ByxLDF2L.css">
 </head>
 
 <body>
@@ -18,6 +18,7 @@
             <div class="tabControlContainer">
                 <button class="view-button selected" id="viewControls">Controls</button>
                 <button class="view-button" id="viewHistory">History</button>
+                <button class="view-button" id="viewHelp">Help</button>
                 <div id="whatsNewContainer"></div>
             </div>
             <div class="tabSubControlContainer">
@@ -74,8 +75,8 @@
                     <div id="rangeSelectHolder"  class="controlContainer">
                         <label for="messageRange" title="This is for Speech Bubbles only.">Range:</label>
                         <select id="messageRange" title="This is for Speech Bubbles only.">
-                            <option value="talk">Talk</option>
                             <option value="whisper">Whisper</option>
+                            <option value="talk">Talk</option>
                             <option value="yell">Yell</option>
                         </select>
                     </div>
@@ -86,10 +87,15 @@
         </div>
         <div id="historyPanel" class="panel" style="display: none;">
             <div id="theatreHistory">
-                <b>LOG HISTORY</b>
                 <div class="full-container">
                     <ul id="dialogLog">
                     </ul>
+                </div>
+            </div>
+        </div>
+        <div id="helpPanel" class="panel" style="display: none;">
+            <div id="theatreHelp">
+                <div id="helpMarkdownContainer" class="help-container">
                 </div>
             </div>
         </div>

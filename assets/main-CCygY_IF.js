@@ -1,1 +1,0 @@
-import{O as e}from"./bsConstants-Cmf1ZMgY.js";import{B as a,T as t}from"./bsSceneCache-DLUxYuUr.js";await e.onReady(async()=>{await a.InitializeCache(),setTimeout(async()=>{a.sceneReady===!1&&await a.InitializeCache(),await t.StartThreatre(),a.SetupHandlers(),a.OpenBroadcast()},1e3)});
