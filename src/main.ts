@@ -5,13 +5,29 @@ import './styles/main-style.css'
 
 await OBR.onReady(async () =>
 {
-    await BSCACHE.InitializeCache();
-
-    setTimeout(async () =>
+    const sceneReady = await OBR.scene.isReady();
+    
+    if (sceneReady === false)
     {
-        if (BSCACHE.sceneReady === false) await BSCACHE.InitializeCache();
-        await THEATRE.StartThreatre();
-        BSCACHE.SetupHandlers();
-        BSCACHE.OpenBroadcast();
-    }, 1000);
+        const startup = OBR.scene.onReadyChange(async (ready) =>
+        {
+            if (ready)
+            {
+                startup(); // Kill startup Handler
+                await BeginTheTheatre();
+            }
+        });
+    }
+    else
+    {
+        await BeginTheTheatre();
+    }
 });
+
+async function BeginTheTheatre()
+{
+    await BSCACHE.InitializeCache();
+    await THEATRE.StartThreatre();
+    BSCACHE.SetupHandlers();
+    BSCACHE.OpenBroadcast();
+}

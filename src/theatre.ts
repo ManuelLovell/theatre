@@ -1,6 +1,7 @@
 import OBR, { Image, Metadata } from '@owlbear-rodeo/sdk';
 import { BSCACHE } from './utilities/bsSceneCache';
 import * as Utilities from './utilities/bsUtilities';
+import * as showdown from 'showdown';
 import { Constants } from './utilities/bsConstants';
 
 class Theatre
@@ -11,6 +12,9 @@ class Theatre
     public controlPanel = document.getElementById("controlPanel") as HTMLDivElement;
     public historyToggle = document.getElementById("viewHistory") as HTMLButtonElement;
     public historyPanel = document.getElementById("historyPanel") as HTMLDivElement;
+    public helpToggle = document.getElementById("viewHelp") as HTMLButtonElement;
+    public helpPanel = document.getElementById("helpPanel") as HTMLDivElement;
+
     public sendButton = document.getElementById("sendMessage") as HTMLButtonElement;
 
     public whatsNew = document.getElementById("whatsNewContainer") as HTMLDivElement;
@@ -42,12 +46,22 @@ class Theatre
     public async StartThreatre()
     {
         this.SetupButtons();
+        this.SetupHelp();
         this.SetupItemSelect();
         this.UpdatePlayerSelect();
     }
 
+    public SetupHelp()
+    {
+        const converter = new showdown.Converter();
+        const helpHtml = converter.makeHtml(Constants.MARKDOWNHELP);
+        const helpElement = document.getElementById("helpMarkdownContainer") as HTMLDivElement;
+        helpElement.innerHTML = helpHtml;
+    }
+
     public SetupButtons()
     {
+        this.messageRange.value = "talk";
         this.messageRangeHolder.style.display = "none";
         this.playerSelectHolder.style.display = "flex";
         this.messageTypeSelect.onchange = () =>
@@ -71,6 +85,9 @@ class Theatre
 
             this.historyPanel.style.display = "none";
             this.historyToggle.classList.remove("selected");
+            
+            this.helpPanel.style.display = "none";
+            this.helpToggle.classList.remove("selected");
         };
 
         this.historyToggle.onclick = (e) =>
@@ -81,7 +98,23 @@ class Theatre
 
             this.historyPanel.style.display = "block";
             this.historyToggle.classList.add("selected");
+            
+            this.helpPanel.style.display = "none";
+            this.helpToggle.classList.remove("selected");
         };
+
+        this.helpToggle.onclick = (e) =>
+            {
+                e.preventDefault();
+                this.controlPanel.style.display = "none";
+                this.controlToggle.classList.remove("selected");
+    
+                this.historyPanel.style.display = "none";
+                this.historyToggle.classList.remove("selected");
+
+                this.helpPanel.style.display = "block";
+                this.helpToggle.classList.add("selected");
+            };
 
         this.sendButton.onclick = async (e) =>
         {
@@ -115,6 +148,7 @@ class Theatre
         this.whisperDistance.value = BSCACHE.sceneMetadata[`${Constants.EXTENSIONID}/whisper`] as string ?? "1";
         this.yellDistance.value = BSCACHE.sceneMetadata[`${Constants.EXTENSIONID}/yell`] as string ?? "10";
     }
+
     public async SendMessage()
     {
         if (!this.messageTextarea.value.trim()) return console.log("NO MESSAGE");
@@ -257,4 +291,4 @@ class Theatre
     }
 }
 
-export const THEATRE = new Theatre('2.0');
+export const THEATRE = new Theatre('2.1');
