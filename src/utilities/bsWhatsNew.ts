@@ -8,6 +8,9 @@ const footer = document.querySelector<HTMLElement>('#bs-whatsnew-notes')!;
 
 whatsnew.innerHTML = `
   <div id="newsContainer">
+    <h1>Theatre! 7/1</h1>
+    Small fix for speech bubbles not appearing on top of the fog layer.
+    </br>
     <h1>Theatre! 4/4</h1>
     Alright, big Theatre update today.  I've had a lot of requests to allow players to also be able to use this, so I decided to go a step further with changes.
     </br> 1. The speech interface is now open to everyone. Mind you, this doesn't mean I added extra handling for everyone spamming at once. You'll just be talking over each other.

@@ -46,6 +46,8 @@ export class LabelLogic
             .strokeWidth(1.75)
             .strokeColor("black")
             .strokeOpacity(1)
+            .zIndex(1)
+            .layer("POPOVER")
             .build();
 
         const bubbleId = GetGUID();
@@ -54,7 +56,6 @@ export class LabelLogic
 
         label.position = { x: image.position.x, y: image.position.y };
         label.attachedTo = image.id; // Set Token Attached To
-        label.visible = image.visible ? true : false; // Set Visibility
         label.locked = true; // Set Lock, Don't want people to touch
         label.disableAttachmentBehavior = ["ROTATION", "SCALE"];
         label.type = "TEXT"; // Set Item Type
@@ -74,14 +75,6 @@ export class LabelLogic
         const freshLabel = await OBR.scene.local.getItems(x => x.metadata[`${Constants.EXTENSIONID}/id`] === bubbleId);
         const labelBounds = await OBR.scene.local.getItemBounds(freshLabel.map(x => x.id));
         const newHeightAdjustment = labelBounds.height + 100;
-        await OBR.scene.local.updateItems(x => x.id === freshLabel[0].id, (items) =>
-        {
-            for (const item of items)
-            {
-                //item.position.x -= labelBounds.width;
-                item.position.y -= newHeightAdjustment;
-            }
-        });
 
         const newBounds = {
             min: { x: labelBounds.min.x, y: labelBounds.min.y - newHeightAdjustment },
@@ -101,6 +94,7 @@ export class LabelLogic
             .fillOpacity(labelOpacity)
             .fillColor(BGCOLOR)
             .zIndex(2)
+            .layer("CONTROL")
             .build();
         namePlate.attachedTo = freshLabel[0].id; // Attach to label for cleanup/movement
         namePlate.disableHit = true;
@@ -117,11 +111,22 @@ export class LabelLogic
             .strokeColor("white")
             .fillColor("#AA82E6")
             .zIndex(3)
+            .layer("CONTROL")
             .build();
         closeButton.attachedTo = freshLabel[0].id;
 
         localItems.push(namePlate);
         localItems.push(closeButton);
+
+        await OBR.scene.local.updateItems(x => x.id === freshLabel[0].id, (items) =>
+        {
+            for (const item of items)
+            {
+                item.position.y -= newHeightAdjustment;
+                //item.visible = true;
+                // when getItemBounds for an invisible item is fixed, this can work
+            }
+        });
 
         await OBR.scene.local.addItems(localItems);
 
