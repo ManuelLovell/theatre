@@ -1,5 +1,8 @@
-import{O as o,C as i}from"./bsConstants-DqcM23cc.js";const c=document.querySelector("#bs-whatsnew"),d=document.querySelector("#bs-whatsnew-notes");c.innerHTML=`
+import{O as o,C as i}from"./bsConstants-DqcM23cc.js";const c=document.querySelector("#bs-whatsnew"),l=document.querySelector("#bs-whatsnew-notes");c.innerHTML=`
   <div id="newsContainer">
+    <h1>Theatre! 7/1</h1>
+    Small fix for speech bubbles not appearing on top of the fog layer.
+    </br>
     <h1>Theatre! 4/4</h1>
     Alright, big Theatre update today.  I've had a lot of requests to allow players to also be able to use this, so I decided to go a step further with changes.
     </br> 1. The speech interface is now open to everyone. Mind you, this doesn't mean I added extra handling for everyone spamming at once. You'll just be talking over each other.
@@ -13,7 +16,7 @@ import{O as o,C as i}from"./bsConstants-DqcM23cc.js";const c=document.querySelec
     </br> If there are any hiccups, let me know. I'm letting this one fly early as Theatre could use some love, and I think people will enjoy it.
     </br>
     </div>
-`;o.onReady(async()=>{const s=window.location.search,t=new URLSearchParams(s).get("subscriber")==="true";d.innerHTML=`
+`;o.onReady(async()=>{const s=window.location.search,t=new URLSearchParams(s).get("subscriber")==="true";l.innerHTML=`
     <div id="footButtonContainer">
         <button id="discordButton" type="button" title="Join the Owlbear-Rodeo Discord"><embed class="svg discord" src="/w-discord.svg" /></button>
         <button id="patreonButton" type="button" ${t?'title="Thank you for subscribing!"':'title="Check out the Battle-System Patreon"'}>
