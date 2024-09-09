@@ -143,6 +143,7 @@ class BSCache
         {
             this.roomMetadata = await OBR.room.getMetadata();
         }
+        await this.CheckRegistration();
     }
 
     private async HandleMessage(metadata: Metadata)
@@ -513,6 +514,48 @@ class BSCache
     public async OnThemeChange(theme: Theme)
     {
         Utilities.SetThemeMode(theme, document);
+    }
+    
+    public async CheckRegistration()
+    {
+        try
+        {
+            const debug = window.location.origin.includes("localhost") ? "eternaldream" : "";
+            const userid = {
+                owlbearid: BSCACHE.playerId
+            };
+
+            const requestOptions = {
+                method: "POST",
+                headers: new Headers({
+                    "Content-Type": "application/json",
+                    "Authorization": Constants.ANONAUTH,
+                    "x-manuel": debug
+                }),
+                body: JSON.stringify(userid),
+            };
+            const response = await fetch(Constants.CHECKREGISTRATION, requestOptions);
+
+            if (!response.ok)
+            {
+                const errorData = await response.json();
+                // Handle error data
+                console.error("Error:", errorData);
+                return;
+            }
+            const data = await response.json();
+            if (data.Data === "OK")
+            {
+                this.USER_REGISTERED = true;
+                console.log("Connected");
+            }
+            else console.log("Not Registered");
+        }
+        catch (error)
+        {
+            // Handle errors
+            console.error("Error:", error);
+        }
     }
 };
 

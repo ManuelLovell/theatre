@@ -17,7 +17,7 @@ class Theatre
 
     public sendButton = document.getElementById("sendMessage") as HTMLButtonElement;
 
-    public whatsNew = document.getElementById("whatsNewContainer") as HTMLDivElement;
+    public patreonContainer = document.getElementById("patreonContainer") as HTMLDivElement;
     public characterSelectLabel = document.getElementById('characterLabel') as HTMLSelectElement;
     public characterSelect = document.getElementById('CharacterSelect') as HTMLSelectElement;
     public playerSelect = document.getElementById('PlayerSelect') as HTMLSelectElement;
@@ -40,11 +40,11 @@ class Theatre
     constructor(version: string)
     {
         this.version = `THEATRE-${version}`;
-        this.whatsNew?.appendChild(Utilities.GetWhatsNewButton());
     }
 
     public async StartThreatre()
     {
+        this.patreonContainer?.appendChild(Utilities.GetPatreonButton());
         this.SetupButtons();
         this.SetupHelp();
         this.SetupItemSelect();

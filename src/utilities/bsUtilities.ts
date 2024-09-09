@@ -56,28 +56,23 @@ export function SetupSticky(): void
         sheetContainer.classList.remove("padded");
     }
 }
-
-export function GetWhatsNewButton()
+export function GetPatreonButton()
 {
     const newImgElement = document.createElement('img');
-    newImgElement.id = "whatsNewButton";
-    newImgElement.style.cursor = "pointer";
+    newImgElement.id = "PatreonButton";
     newImgElement.setAttribute('class', 'icon');
-    newImgElement.classList.add('clickable');
-    newImgElement.setAttribute('title', 'Whats New?');
-    newImgElement.setAttribute('src', '/w-info.svg');
-    newImgElement.onclick = async function ()
+    newImgElement.classList.add('patreon-clickable');
+    newImgElement.setAttribute('title', BSCACHE.USER_REGISTERED ? 'Thanks for subscribing!' : 'Get the news on updates on the Battle-System Patreon');
+    newImgElement.setAttribute('src', BSCACHE.USER_REGISTERED ? 'w-thankyou.svg' : '/w-patreon-2.png');
+    newImgElement.onclick = async function (e)
     {
-        await OBR.modal.open({
-            id: Constants.EXTENSIONWHATSNEW,
-            url: `/submenu/whatsnew.html?subscriber=${BSCACHE.USER_REGISTERED}`,
-            height: 500,
-            width: 350,
-        });
-    };
+        e.preventDefault();
+        window.open("https://www.patreon.com/battlesystem", "_blank");
+    }
 
     return newImgElement;
 }
+
 export function arraysAreEqual(array1: string[], array2: string[])
 {
     if (array1.length !== array2.length)
