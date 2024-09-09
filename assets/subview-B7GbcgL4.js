@@ -1,4 +1,4 @@
-import{O as s,S as h,C as n}from"./bsSceneCache-CHoCi1A-.js";await s.onReady(async()=>{const m=await s.theme.getTheme();h(m,document);const e=(await s.player.getMetadata())[`${n.EXTENSIONID}/dialogueBox`];let r=await s.viewport.getWidth()<600;e.Type==="notice"&&(r=!0);const g=`
+import{O as s,S as h,C as n}from"./bsSceneCache-BvNLjm27.js";await s.onReady(async()=>{const m=await s.theme.getTheme();h(m,document);const e=(await s.player.getMetadata())[`${n.EXTENSIONID}/dialogueBox`];let r=await s.viewport.getWidth()<600;e.Type==="notice"&&(r=!0);const g=`
     <div class="left-column">
         <img id="dialog-close"" class="close-icon" src="/close.svg">
         <img id="dialog-forward" class="forward-icon" src="/play.svg" hidden>
