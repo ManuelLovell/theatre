@@ -56,6 +56,7 @@ export function SetupSticky(): void
         sheetContainer.classList.remove("padded");
     }
 }
+
 export function GetPatreonButton()
 {
     const newImgElement = document.createElement('img');
@@ -63,7 +64,7 @@ export function GetPatreonButton()
     newImgElement.setAttribute('class', 'icon');
     newImgElement.classList.add('patreon-clickable');
     newImgElement.setAttribute('title', BSCACHE.USER_REGISTERED ? 'Thanks for subscribing!' : 'Get the news on updates on the Battle-System Patreon');
-    newImgElement.setAttribute('src', BSCACHE.USER_REGISTERED ? 'w-thankyou.svg' : '/w-patreon-2.png');
+    newImgElement.setAttribute('src', BSCACHE.USER_REGISTERED ? '/w-thankyou.svg' : '/w-patreon-2.png');
     newImgElement.onclick = async function (e)
     {
         e.preventDefault();
