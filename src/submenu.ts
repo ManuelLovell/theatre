@@ -1,59 +1,34 @@
 import OBR from "@owlbear-rodeo/sdk";
 import { Constants } from "./utilities/bsConstants";
-import { SetThemeMode } from "./utilities/bsUtilities";
+import { CheckIfImage, SetThemeMode } from "./utilities/bsUtilities";
 import './styles/sub-style.css'
+import { TheatreForms } from "./submenu_forms";
 
 //let currentRole: "PLAYER" | "GM";
 await OBR.onReady(async () =>
 {
-    const currentTheme = (await OBR.theme.getTheme());
+    const subwindowHtml = document.getElementById('sapp') as HTMLDivElement;
+    const currentTheme = await OBR.theme.getTheme();
     SetThemeMode(currentTheme, document);
+
     const metadata = await OBR.player.getMetadata();
     const dialog = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
 
-    const windowWidth = await OBR.viewport.getWidth();
-    let mobile = windowWidth < 600;
-
-    if (dialog.Type === "notice") mobile = true;
-
-    const regForm = `
-    <div class="left-column">
-        <img id="dialog-close"" class="close-icon" src="/close.svg">
-        <img id="dialog-forward" class="forward-icon" src="/play.svg" hidden>
-        <div id="imageHolder"><img src="${dialog.ImageUrl}" onerror="this.src='/error.svg';" alt="Character Image" class="character-image"></div>
-    </div>
-    <div class="right-column">
-        <div class="upper-part">
-            <div class="character-name">${dialog.Name}</div>
-        </div>
-        <div class="lower-part">
-            <div id="messageBody"></div>
-        </div>
-    </div>
-    `;
-    const mobForm = `
-    <div class="top-container">
-        <img id="dialog-close"" class="close-icon" src="/close.svg">
-        <img id="dialog-forward" class="mobile-forward-icon" src="/play.svg" hidden>
-        <div class="left-top">
-            <div id="imageHolder"><img src="${dialog.ImageUrl}" onerror="this.src='/error.svg';" alt="Character Image" class="character-image"></div>
-        </div>
-        <div class="right-top">
-            <div class="character-name">${dialog.Name}</div>
-        </div>
-    </div>
-    <div class="bottom-container">
-        <div id="messageBody"></div>
-    </div>
-    `;
-
-    document.querySelector<HTMLDivElement>('#sapp')!.innerHTML = mobile ? mobForm : regForm;
-    if (dialog.Type === "notice")
+    if (dialog.Type === "dialogue")
     {
+        const windowWidth = await OBR.viewport.getWidth();
+        subwindowHtml.innerHTML = windowWidth < 600 ? TheatreForms.CompactForm(dialog) : TheatreForms.RegularForm(dialog);
+    }
+    else if (dialog.Type === "notice")
+    {
+        subwindowHtml.innerHTML = TheatreForms.CompactForm(dialog);
         document.querySelector<HTMLDivElement>('#sapp')!.style.flexDirection = "column";
         document.querySelector<HTMLDivElement>('.bottom-container')!.style.flex = "1";
     }
-
+    else if (dialog.Type === "story")
+    {
+        subwindowHtml.innerHTML = TheatreForms.StoryForm();
+    }
 
     const messageArea = document.getElementById("messageBody")!;
     const closeButton = document.getElementById("dialog-close")! as HTMLInputElement;
@@ -63,14 +38,31 @@ await OBR.onReady(async () =>
         await OBR.popover.close(Constants.EXTENSIONID);
     };
 
-    const segmentedMessage = dialog.Message.split("::");
+    const segmentedMessages = dialog.Message.split("::");
+
+    const isImageChecks: boolean[] = [];
+    for (const message of segmentedMessages)
+    {
+        // Check to see which of these messages are images
+        const isImage = await CheckIfImage(message);
+        isImageChecks.push(isImage);
+    }
+
     let pageNumber = 0;
 
     function displayCharacter(index: number)
     {
-        if (index < segmentedMessage[pageNumber].length)
+        if ((dialog.Type === "story") && (index !== 99999) && (isImageChecks[pageNumber] === true))
         {
-            messageArea.innerHTML += segmentedMessage[pageNumber].charAt(index);
+            messageArea.innerHTML = `<img class="story-image" src="${segmentedMessages[pageNumber]}" onerror="this.onerror=null;this.src='/failload.png';" width="auto" height="auto">`;
+            setTimeout(function ()
+            {
+                displayCharacter(99999);
+            }, 1500);
+        }
+        else if (index < segmentedMessages[pageNumber].length)
+        {
+            messageArea.innerHTML += segmentedMessages[pageNumber].charAt(index);
             setTimeout(function ()
             {
                 displayCharacter(index + 1);
@@ -79,7 +71,7 @@ await OBR.onReady(async () =>
         else
         {
             const playButton = document.getElementById('dialog-forward')!;
-            if ((pageNumber + 1) === segmentedMessage.length)
+            if ((pageNumber + 1) === segmentedMessages.length)
             {
                 playButton.hidden = true;
                 playButton.classList.remove('glow-image');

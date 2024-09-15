@@ -291,4 +291,4 @@ class Theatre
     }
 }
 
-export const THEATRE = new Theatre('2.11');
+export const THEATRE = new Theatre('2.2');

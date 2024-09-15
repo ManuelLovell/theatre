@@ -2,6 +2,41 @@ import OBR, { Item, Image, Theme } from "@owlbear-rodeo/sdk";
 import { BSCACHE } from "./bsSceneCache";
 import { Constants } from "./bsConstants";
 
+export async function CheckIfImage(url: string): Promise<boolean>
+{
+    // Check if the URL has a common image file extension
+    const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i;
+    if (imageExtensions.test(url))
+    {
+        return true;
+    }
+
+    // If no extension, try to fetch the headers
+    try
+    {
+        const response = await fetch(url, {
+            method: 'HEAD',
+            mode: 'no-cors' // This helps avoid CORS issues
+        });
+
+        // Due to 'no-cors', we can't access the headers directly
+        // Instead, we check if the response type is 'opaque'
+        if (response.type === 'opaque')
+        {
+            // We can't determine for sure, but it's likely an image
+            return true;
+        }
+
+        // If we can access headers, check the content type
+        const contentType = response.headers.get('Content-Type');
+        return contentType ? contentType.startsWith('image/') : false;
+    } catch (error)
+    {
+        console.error('Error checking image URL:', error);
+        return false;
+    }
+}
+
 // Keep the Chronicle header at the top
 export async function RequestData(requestUrl: string, requestPackage: any): Promise<BSData>
 {
