@@ -193,7 +193,7 @@ class BSCache
                 }
                 if (heardMessage)
                 {
-                    await LabelLogic.UpdateLabel(actor, "36", "80", bubble.Message, bubble.Range);
+                    await LabelLogic.UpdateLabel(actor, "36", "90", bubble.Message, bubble.Range);
                     this.UpdateHistoryLog(metadata, true);
                 }
             }

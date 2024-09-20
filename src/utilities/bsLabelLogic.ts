@@ -2,6 +2,7 @@ import OBR, { Image, Metadata, buildText, Command, buildPath, PathCommand, Bound
 import { GetGUID } from './bsUtilities';
 import { Constants } from "./bsConstants";
 
+let currentZIndex = 0;
 export class LabelLogic
 {
     static async UpdateLabel(image: Image, fontSize: string, opacity: string, message: string, volume: string): Promise<void>
@@ -46,8 +47,10 @@ export class LabelLogic
             .strokeWidth(1.75)
             .strokeColor("black")
             .strokeOpacity(1)
-            .zIndex(1)
-            .layer("POPOVER")
+            .zIndex(currentZIndex + 3)
+            .disableHit(true)
+            .disableAutoZIndex(true)
+            .layer("CONTROL")
             .build();
 
         const bubbleId = GetGUID();
@@ -93,12 +96,13 @@ export class LabelLogic
             .strokeColor(volumeColor)
             .fillOpacity(labelOpacity)
             .fillColor(BGCOLOR)
-            .zIndex(2)
+            .zIndex(currentZIndex + 1)
+            .disableAutoZIndex(true)
             .layer("CONTROL")
+            .disableHit(true)
+            .disableAttachmentBehavior(["ROTATION", "SCALE"])
+            .attachedTo(freshLabel[0].id)
             .build();
-        namePlate.attachedTo = freshLabel[0].id; // Attach to label for cleanup/movement
-        namePlate.disableHit = true;
-        namePlate.disableAttachmentBehavior = ["ROTATION", "SCALE"];
 
         const closeButton = buildPath()
             .locked(false)
@@ -110,25 +114,29 @@ export class LabelLogic
             .position({ x: newBounds.min.x - 15, y: newBounds.min.y - 15 })
             .strokeColor("white")
             .fillColor("#AA82E6")
-            .zIndex(3)
+            .zIndex(currentZIndex + 2)
+            .disableAutoZIndex(true)
+            .attachedTo(freshLabel[0].id)
             .layer("CONTROL")
             .build();
-        closeButton.attachedTo = freshLabel[0].id;
 
         localItems.push(namePlate);
         localItems.push(closeButton);
+        console.log(currentZIndex)
 
         await OBR.scene.local.updateItems(x => x.id === freshLabel[0].id, (items) =>
         {
             for (const item of items)
             {
                 item.position.y -= newHeightAdjustment;
+                item.zIndex = (currentZIndex + 3)
                 //item.visible = true;
                 // when getItemBounds for an invisible item is fixed, this can work
             }
         });
 
         await OBR.scene.local.addItems(localItems);
+        currentZIndex += 3;
 
         setTimeout(async () =>
         {
@@ -154,7 +162,7 @@ export class LabelLogic
                 [Command.QUAD, minX, maxY, minX + radius, maxY], // Draw the left-bottom rounded corner
 
                 [Command.LINE, minX + (pWidth / 2 - triangleWidth), maxY], // Right vertex
-                [Command.LINE, image.position.x, image.position.y],
+                [Command.LINE, (image.position.x + (image.image.width / 4)), (image.position.y - (image.image.height / 4))],
                 [Command.LINE, maxX - (pWidth / 2), maxY], // Draw horizontal line to start of right-bottom rounded corner
 
                 [Command.LINE, maxX - radius, maxY], // Draw horizontal line to start of right-bottom rounded corner
