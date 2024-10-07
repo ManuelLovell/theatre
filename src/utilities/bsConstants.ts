@@ -3,11 +3,11 @@ import { Command, PathCommand } from "@owlbear-rodeo/sdk";
 export class Constants
 {
     static EXTENSIONID = "com.battle-system.theatre";
-
+    static SELECTEDTOKENOPTION = "SELECTED-0000";
     static BROADCASTCHANNEL = "com.battle-system.theatre-broadcast";
     static SELFCHANNEL = "com.battle-system.threatre-self";
     static CHECKREGISTRATION = 'https://vrwtdtmnbyhaehtitrlb.supabase.co/functions/v1/patreon-check';
-    
+
     static ANONAUTH = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
     static CLOSEBUTTON: PathCommand[] = [
         [Command.MOVE, 0, -50], // Move to the top point of the circle
@@ -22,36 +22,36 @@ export class Constants
         [Command.CLOSE] // Close the path
     ];
     static MULTIPAGE = `What is Lorem Ipsum?
-        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.
-        ::
-        Why are you doing this?
-        Because I hate writing filler text.
-        `;
+Lorem Ipsum is simply dummy text of the printing and typesetting industry.\n Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,\n when an unknown printer took a galley of type and scrambled it to make a type specimen book.\n It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.
+::
+Why are you doing this?\t Who knows.\n
+Because I hate writing filler text.
+`;
 
     static LOGHTML = `<b>LOG HISTORY</b><div class="full-container">
         <ul id="dialogLog">
         </ul>
         </div>`;
-    static FRESHPRINCE = `Now, this is a story all about how
-        My life got flipped-turned upside down
-        And I'd like to take a minute
-        Just sit right there
-        I'll tell you how I became the prince of a town called Bel-Air
-        In West Philadelphia born and raised
-        On the playground was where I spent most of my days
-        Chillin' out, maxin', relaxin', all cool
-        And all shootin' some b-ball outside of the school
-        When a couple of guys who were up to no good
-        Started making trouble in my neighborhood
-        I got in one little fight and my mom got scared
-        She said, "You're movin' with your auntie and uncle in Bel-Air"
-        I begged and pleaded with her day after day
-        But she packed my suitcase and sent me on my way
-        She gave me a kiss and then she gave me my ticket
-        I put my Walkman on and said, "I might as well kick it"
+    static FRESHPRINCE = `Now, this is a story all about how\n
+        My life got flipped-turned upside down\n
+        And I'd like to take a minute\n
+        Just sit right there\n
+        I'll tell you how I became the prince of a town called Bel-Air\n
+        In West Philadelphia born and raised\n
+        On the playground was where I spent most of my days\n
+        Chillin' out, maxin', relaxin', all cool\n
+        And all shootin' some b-ball outside of the school\n
+        When a couple of guys who were up to no good\n
+        Started making trouble in my neighborhood\n
+        I got in one little fight and my mom got scared\n
+        She said, "You're movin' with your auntie and uncle in Bel-Air"\n
+        I begged and pleaded with her day after day\n
+        But she packed my suitcase and sent me on my way\n
+        She gave me a kiss and then she gave me my ticket\n
+        I put my Walkman on and said, "I might as well kick it"\n
         First class, yo this is bad`;
-        
-    static MARKDOWNHELP =  `
+
+    static MARKDOWNHELP = `
 <a id="theatre" name="theatre"></a>
 <!-- TABLE OF CONTENTS -->
 <details open>

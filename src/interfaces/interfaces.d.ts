@@ -7,7 +7,6 @@ interface IDialog
     Type: string;
     TargetId: string;
     Code: string;
-    Created: string;
 }
 
 interface IBubble

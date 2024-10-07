@@ -85,7 +85,7 @@ class Theatre
 
             this.historyPanel.style.display = "none";
             this.historyToggle.classList.remove("selected");
-            
+
             this.helpPanel.style.display = "none";
             this.helpToggle.classList.remove("selected");
         };
@@ -98,23 +98,23 @@ class Theatre
 
             this.historyPanel.style.display = "block";
             this.historyToggle.classList.add("selected");
-            
+
             this.helpPanel.style.display = "none";
             this.helpToggle.classList.remove("selected");
         };
 
         this.helpToggle.onclick = (e) =>
-            {
-                e.preventDefault();
-                this.controlPanel.style.display = "none";
-                this.controlToggle.classList.remove("selected");
-    
-                this.historyPanel.style.display = "none";
-                this.historyToggle.classList.remove("selected");
+        {
+            e.preventDefault();
+            this.controlPanel.style.display = "none";
+            this.controlToggle.classList.remove("selected");
 
-                this.helpPanel.style.display = "block";
-                this.helpToggle.classList.add("selected");
-            };
+            this.historyPanel.style.display = "none";
+            this.historyToggle.classList.remove("selected");
+
+            this.helpPanel.style.display = "block";
+            this.helpToggle.classList.add("selected");
+        };
 
         this.sendButton.onclick = async (e) =>
         {
@@ -151,72 +151,95 @@ class Theatre
 
     public async SendMessage()
     {
-        if (!this.messageTextarea.value.trim()) return console.log("NO MESSAGE");
+        const useSelectedToken = this.characterSelect.value === Constants.SELECTEDTOKENOPTION;
+        const tokenId = useSelectedToken ? (await OBR.player.getSelection() ?? [])[0] : this.characterSelect.value;
 
-        const target = BSCACHE.sceneItems.find(item => item.id === this.characterSelect.value);
+        const target = BSCACHE.sceneItems.find(item => item.id === tokenId);
 
-        if (!target || !target.image?.url) return console.log("NO IMAGE");
-
-        const tokenName = target.text?.plainText ? target.text.plainText : target.name;
-        const code = Utilities.GetGUID();
-
-        let sendMessage = this.messageTextarea.value;
-        switch (this.messageTextarea.value)
+        if (!target || !target.image?.url)
         {
-            case "fresh":
-                sendMessage = Constants.FRESHPRINCE;
-                break;
-            case "test":
-                sendMessage = Constants.MULTIPAGE;
-                break;
-            default:
-                break;
+            console.log("Unable to find image for Message.");
+            return;
         }
-        const dialogueBox = {
-            Id: target.id,
-            Name: this.overrideNameInput.value ? this.overrideNameInput.value : tokenName,
-            ImageUrl: target.image.url,
-            Message: sendMessage,
-            TargetId: this.playerSelect.value,
-            Type: this.messageTypeSelect.value,
-            Code: code
-        } as IDialog;
-
-        const metadata: Metadata =
+        if (target.createdUserId !== BSCACHE.playerId && BSCACHE.playerRole !== "GM")
         {
-            [`${Constants.EXTENSIONID}/dialogueBox`]: dialogueBox,
-            [`${Constants.EXTENSIONID}/dialogueCode`]: code
-        };
-
-        if (this.messageTypeSelect.value === "bubble")
-        {
-            // It's just easier if everything looks like Metadata
-            const bubbleBox = {
-                Id: target.id,
-                Name: this.overrideNameInput.value ? this.overrideNameInput.value : tokenName,
-                Message: sendMessage,
-                Range: this.messageRange.value
-            } as IBubble;
-
-            const metadata: Metadata = { [`${Constants.EXTENSIONID}/bubbleBox`]: bubbleBox };
-
-            await OBR.broadcast.sendMessage(Constants.BROADCASTCHANNEL, metadata);
-            if (this.viewMessageBox.checked)
-            {
-                this.broadcaster.postMessage(metadata);
-            }
+            await OBR.notification.show("Cannot send messages for tokens you do not own.", "ERROR");
+            return;
         }
-        else
+
+        let message = this.messageTextarea.value.trim();
+        const messageType = this.messageTypeSelect.value;
+
+        if (!message)
         {
-            await OBR.broadcast.sendMessage(Constants.BROADCASTCHANNEL, metadata);
-            if (this.viewMessageBox.checked)
+            if (messageType === "story")
             {
-                this.broadcaster.postMessage(metadata);
+                message = target.image.url;
             }
             else
             {
-                await OBR.notification.show("Message sent", "SUCCESS");
+                console.log("No message has been entered to send.");
+                return;
             }
+        }
+
+        const code = Utilities.GetGUID();
+        const tokenName = target.text?.plainText || target.name;
+        const name = this.overrideNameInput.value || tokenName;
+
+        const baseMetadata = {
+            Id: target.id,
+            Name: name,
+            ImageUrl: target.image.url,
+            TargetId: this.playerSelect.value,
+            Type: messageType,
+            Code: code
+        };
+
+        let metadata: Metadata;
+
+        if (messageType === "bubble")
+        {
+            metadata = {
+                [`${Constants.EXTENSIONID}/bubbleBox`]: {
+                    ...baseMetadata,
+                    Message: message,
+                    Range: this.messageRange.value
+                } as IBubble
+            };
+        }
+        else
+        {
+            const dialogueBox: IDialog = {
+                ...baseMetadata,
+                Message: this.getFormattedMessage(message)
+            };
+
+            metadata = {
+                [`${Constants.EXTENSIONID}/dialogueBox`]: dialogueBox,
+                [`${Constants.EXTENSIONID}/dialogueCode`]: code
+            };
+        }
+
+        await OBR.broadcast.sendMessage(Constants.BROADCASTCHANNEL, metadata);
+
+        if (this.viewMessageBox.checked)
+        {
+            this.broadcaster.postMessage(metadata);
+        }
+        else
+        {
+            await OBR.notification.show("Message sent", "SUCCESS");
+        }
+    }
+
+    private getFormattedMessage(message: string): string
+    {
+        switch (message)
+        {
+            case "fresh": return Constants.FRESHPRINCE;
+            case "test": return Constants.MULTIPAGE;
+            default: return message;
         }
     }
 
@@ -224,6 +247,12 @@ class Theatre
     {
         const characterSelect = document.getElementById('CharacterSelect') as HTMLSelectElement;
         characterSelect.innerHTML = '';
+
+        const option = document.createElement('option');
+        option.value = Constants.SELECTEDTOKENOPTION;
+        option.text = "Use Selected";
+        characterSelect.add(option);
+
         BSCACHE.sceneItems.forEach(item =>
         {
             if (item.layer === "CHARACTER"
@@ -291,4 +320,4 @@ class Theatre
     }
 }
 
-export const THEATRE = new Theatre('2.2');
+export const THEATRE = new Theatre('2.21');

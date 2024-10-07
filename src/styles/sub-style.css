@@ -1,5 +1,5 @@
 :root {
-    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    font-family: monospace, monospace;
     line-height: 1.1;
     font-weight: 400;
 
@@ -85,7 +85,7 @@ body {
     margin: 0;
     overflow: hidden;
     /* Prevent scrolling */
-    font-family: 'Arial', sans-serif;
+    font-family: monospace, monospace;
     height: 100%;
     width: 100%;
     display: flex;

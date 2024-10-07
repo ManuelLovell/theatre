@@ -38,7 +38,7 @@ await OBR.onReady(async () =>
         await OBR.popover.close(Constants.EXTENSIONID);
     };
 
-    const segmentedMessages = dialog.Message.split("::");
+    const segmentedMessages = dialog.Message.split("::").map(unescapeString)
 
     const isImageChecks: boolean[] = [];
     for (const message of segmentedMessages)
@@ -59,16 +59,32 @@ await OBR.onReady(async () =>
             {
                 displayCharacter(99999);
             }, 1500);
-        }
-        else if (index < segmentedMessages[pageNumber].length)
+        } else if (index < segmentedMessages[pageNumber].length)
         {
-            messageArea.innerHTML += segmentedMessages[pageNumber].charAt(index);
+            const currentChar = segmentedMessages[pageNumber][index];
+
+            if (currentChar === '\n')
+            {
+                messageArea.innerHTML += '<br>';
+            }
+            else if (currentChar === '\t')
+            {
+                messageArea.innerHTML += '&emsp;&emsp;';
+            } 
+            else if (currentChar === '\T')
+            {
+                messageArea.innerHTML += '&emsp;&emsp;&emsp;&emsp;';
+            } 
+            else
+            {
+                messageArea.innerHTML += currentChar;
+            }
+
             setTimeout(function ()
             {
                 displayCharacter(index + 1);
             }, 15);
-        }
-        else
+        } else
         {
             const playButton = document.getElementById('dialog-forward')!;
             if ((pageNumber + 1) === segmentedMessages.length)
@@ -76,8 +92,7 @@ await OBR.onReady(async () =>
                 playButton.hidden = true;
                 playButton.classList.remove('glow-image');
                 closeButton.classList.add('glow-image');
-            }
-            else
+            } else
             {
                 playButton.hidden = false;
                 playButton.classList.add('glow-image');
@@ -93,6 +108,15 @@ await OBR.onReady(async () =>
         }
     }
 
+    function unescapeString(str: string): string
+    {
+        return str.replace(/\\n/g, '\n')
+            .replace(/\\t/g, '\t')
+            .replace(/\\T/g, '\T')
+            .replace(/\\'/g, "'")
+            .replace(/\\"/g, '"')
+            .replace(/\\\\/g, '\\');
+    }
     // Begin Displaying Message
 
     displayCharacter(0);

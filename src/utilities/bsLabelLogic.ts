@@ -122,7 +122,6 @@ export class LabelLogic
 
         localItems.push(namePlate);
         localItems.push(closeButton);
-        console.log(currentZIndex)
 
         await OBR.scene.local.updateItems(x => x.id === freshLabel[0].id, (items) =>
         {
