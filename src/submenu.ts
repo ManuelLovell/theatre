@@ -63,15 +63,15 @@ await OBR.onReady(async () =>
         {
             const currentChar = segmentedMessages[pageNumber][index];
 
-            if (currentChar === '\n')
+            if (currentChar === '§')
             {
                 messageArea.innerHTML += '<br>';
             }
-            else if (currentChar === '\t')
+            else if (currentChar === '†')
             {
                 messageArea.innerHTML += '&emsp;&emsp;';
             } 
-            else if (currentChar === '\T')
+            else if (currentChar === '‡')
             {
                 messageArea.innerHTML += '&emsp;&emsp;&emsp;&emsp;';
             } 
@@ -110,9 +110,9 @@ await OBR.onReady(async () =>
 
     function unescapeString(str: string): string
     {
-        return str.replace(/\\n/g, '\n')
-            .replace(/\\t/g, '\t')
-            .replace(/\\T/g, '\T')
+        return str.replace(/\\n/g, '§')
+            .replace(/\\t/g, '†')
+            .replace(/\\T/g, '‡')
             .replace(/\\'/g, "'")
             .replace(/\\"/g, '"')
             .replace(/\\\\/g, '\\');
