@@ -22,3 +22,10 @@ interface IPlayer
     id: string;
     name: string;
 }
+
+interface IRumbleLog
+{
+    Author: string;
+    Message: string;
+    Volume: string;
+}

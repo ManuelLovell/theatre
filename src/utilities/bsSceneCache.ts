@@ -93,7 +93,7 @@ class BSCache
     {
         // Always Cache
         this.sceneReady = await OBR.scene.isReady();
-        
+
         this.theme = await OBR.theme.getTheme();
         Utilities.SetThemeMode(this.theme, document);
 
@@ -177,7 +177,7 @@ class BSCache
             if (actor.createdUserId === this.playerId || this.playerRole === "GM")
             {
                 await LabelLogic.UpdateLabel(actor, "36", "80", bubble.Message, bubble.Range);
-                this.UpdateHistoryLog(metadata, true);
+                await this.UpdateHistoryLog(metadata, true);
             }
             else
             {
@@ -194,7 +194,7 @@ class BSCache
                 if (heardMessage)
                 {
                     await LabelLogic.UpdateLabel(actor, "36", "90", bubble.Message, bubble.Range);
-                    this.UpdateHistoryLog(metadata, true);
+                    await this.UpdateHistoryLog(metadata, true);
                 }
             }
         }
@@ -250,16 +250,44 @@ class BSCache
                     },
                 });
             }
-            this.UpdateHistoryLog(metadata, false);
+            await this.UpdateHistoryLog(metadata, false);
         }
     }
 
-    private UpdateHistoryLog(metadata: Metadata, bubble: boolean)
+    private async UpdateRumbleLog(name: string, message: string)
+    {
+        setTimeout(async function ()
+        {
+            const rumbleMessage: IRumbleLog = {
+                Author: name,
+                Message: message,
+                Volume: "said..."
+            };
+            await OBR.broadcast.sendMessage(Constants.RUMBLECHANNEL, rumbleMessage, { destination: "LOCAL" });
+        }, 1000);
+    }
+
+    private async UpdateRumbleLogForBubble(metadata: Metadata, range: string)
+    {
+        let volume = "said...";
+        if (range === "yell") volume = "yells...";
+        if (range === "whisper") volume = "whispers...";
+
+        const dialogContainer = metadata[`${Constants.EXTENSIONID}/bubbleBox`] as IBubble;
+        const rumbleMessage: IRumbleLog = {
+            Author: dialogContainer.Name,
+            Message: dialogContainer.Message,
+            Volume: volume
+        };
+        await OBR.broadcast.sendMessage(Constants.RUMBLECHANNEL, rumbleMessage, { destination: "LOCAL" });
+    }
+
+    public async UpdateHistoryLog(metadata: Metadata, bubble: boolean)
     {
         const chatLog = document.querySelector<HTMLDivElement>('#dialogLog')!;
         if (bubble)
         {
-            if (metadata[`${Constants.EXTENSIONID}/bubbleBox`] != undefined)
+            if (metadata[`${Constants.EXTENSIONID}/bubbleBox`] !== undefined)
             {
                 const dialogContainer = metadata[`${Constants.EXTENSIONID}/bubbleBox`] as IBubble;
 
@@ -268,19 +296,44 @@ class BSCache
                 //listMessage.style.color = dialogContainer.color;
                 listMessage.innerHTML = `<div class="author">${dialogContainer.Name}:</div>➤ ${dialogContainer.Message.trim()}`;
                 chatLog.append(listMessage);
+
+                const bubble = metadata[`${Constants.EXTENSIONID}/bubbleBox`] as IBubble;
+                await this.UpdateRumbleLogForBubble(metadata, bubble.Range);
             }
         }
         else
         {
-            if (metadata[`${Constants.EXTENSIONID}/dialogueBox`] != undefined)
+            if (metadata[`${Constants.EXTENSIONID}/dialogueBox`] !== undefined)
             {
-                const dialogContainer = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
+                const dialog = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
+                const segmentedMessages = dialog.Message.split("::").map(unescapeString);
 
-                // Flag to see if you're the sender
-                const listMessage = document.createElement('li');
-                //listMessage.style.color = dialogContainer.color;
-                listMessage.innerHTML = `<div class="author">${dialogContainer.Name}:</div>➤ ${dialogContainer.Message.trim()}`;
-                chatLog.append(listMessage);
+                function unescapeString(str: string): string
+                {
+                    return str.replace(/\\n/g, '<br>')
+                        .replace(/\\t/g, '&emsp;&emsp;')
+                        .replace(/\\T/g, '&emsp;&emsp;&emsp;&emsp;')
+                        .replace(/\\'/g, "'")
+                        .replace(/\\"/g, '"')
+                        .replace(/\\\\/g, '\\');
+                }
+
+                for (let segment of segmentedMessages)
+                {
+                    if (dialog.Type === "story")
+                    {
+                        const isImage = await Utilities.CheckIfImage(segment);
+                        if (isImage)
+                        {
+                            segment = `<img class="story-image" src="${segment}" onerror="this.onerror=null;this.src='/failload.png';" width="auto" height="auto">`;
+                        }
+                    }
+                    // Flag to see if you're the sender
+                    const listMessage = document.createElement('li');
+                    listMessage.innerHTML = `<div class="author">${dialog.Name}:</div><div class="log-message">➤ ${segment}<div>`;
+                    chatLog.append(listMessage);
+                    await this.UpdateRumbleLog(dialog.Name, segment);
+                }
             }
         }
     }
@@ -515,7 +568,7 @@ class BSCache
     {
         Utilities.SetThemeMode(theme, document);
     }
-    
+
     public async CheckRegistration()
     {
         try

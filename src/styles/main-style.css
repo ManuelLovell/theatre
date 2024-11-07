@@ -368,3 +368,8 @@ a {
     padding: 0 2px 4px;
     vertical-align: middle;
 }
+
+.log-message
+{
+    overflow-wrap: anywhere;
+}

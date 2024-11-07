@@ -38,7 +38,7 @@ await OBR.onReady(async () =>
         await OBR.popover.close(Constants.EXTENSIONID);
     };
 
-    const segmentedMessages = dialog.Message.split("::").map(unescapeString)
+    const segmentedMessages = dialog.Message.split("::").map(unescapeString);
 
     const isImageChecks: boolean[] = [];
     for (const message of segmentedMessages)
@@ -50,16 +50,17 @@ await OBR.onReady(async () =>
 
     let pageNumber = 0;
 
-    function displayCharacter(index: number)
+    async function displayCharacter(index: number)
     {
         if ((dialog.Type === "story") && (index !== 99999) && (isImageChecks[pageNumber] === true))
         {
             messageArea.innerHTML = `<img class="story-image" src="${segmentedMessages[pageNumber]}" onerror="this.onerror=null;this.src='/failload.png';" width="auto" height="auto">`;
-            setTimeout(function ()
+            setTimeout(async function ()
             {
-                displayCharacter(99999);
+                await displayCharacter(99999);
             }, 1500);
-        } else if (index < segmentedMessages[pageNumber].length)
+        }
+        else if (index < segmentedMessages[pageNumber].length)
         {
             const currentChar = segmentedMessages[pageNumber][index];
 
@@ -70,21 +71,22 @@ await OBR.onReady(async () =>
             else if (currentChar === '†')
             {
                 messageArea.innerHTML += '&emsp;&emsp;';
-            } 
+            }
             else if (currentChar === '‡')
             {
                 messageArea.innerHTML += '&emsp;&emsp;&emsp;&emsp;';
-            } 
+            }
             else
             {
                 messageArea.innerHTML += currentChar;
             }
 
-            setTimeout(function ()
+            setTimeout(async function ()
             {
-                displayCharacter(index + 1);
+                await displayCharacter(index + 1);
             }, 15);
-        } else
+        }
+        else
         {
             const playButton = document.getElementById('dialog-forward')!;
             if ((pageNumber + 1) === segmentedMessages.length)
@@ -92,17 +94,18 @@ await OBR.onReady(async () =>
                 playButton.hidden = true;
                 playButton.classList.remove('glow-image');
                 closeButton.classList.add('glow-image');
-            } else
+            }
+            else
             {
                 playButton.hidden = false;
                 playButton.classList.add('glow-image');
-                playButton.onclick = () =>
+                playButton.onclick = async () =>
                 {
                     messageArea.innerHTML = "";
                     pageNumber++; // Increment the page.
                     playButton.hidden = true;
                     playButton.classList.remove('glow-image');
-                    displayCharacter(0);
+                    await displayCharacter(0);
                 };
             }
         }
@@ -119,5 +122,5 @@ await OBR.onReady(async () =>
     }
     // Begin Displaying Message
 
-    displayCharacter(0);
+    await displayCharacter(0);
 });

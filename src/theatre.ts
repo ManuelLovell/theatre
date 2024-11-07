@@ -226,10 +226,15 @@ class Theatre
         if (this.viewMessageBox.checked)
         {
             this.broadcaster.postMessage(metadata);
+            // If you view the message, it should log along the regular pipelines
         }
         else
         {
             await OBR.notification.show("Message sent", "SUCCESS");
+            await BSCACHE.UpdateHistoryLog(metadata, messageType === "bubble");
+            // Need to log the 'converted' message for the GM to Rumble if NOT bubble
+            // The logger for everyoen else is done in the submenu file
+            // Fix images in history
         }
     }
 

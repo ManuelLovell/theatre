@@ -6,6 +6,7 @@ export class Constants
     static SELECTEDTOKENOPTION = "SELECTED-0000";
     static BROADCASTCHANNEL = "com.battle-system.theatre-broadcast";
     static SELFCHANNEL = "com.battle-system.threatre-self";
+    static RUMBLECHANNEL = "THEATRERUMBLE";
     static CHECKREGISTRATION = 'https://vrwtdtmnbyhaehtitrlb.supabase.co/functions/v1/patreon-check';
 
     static ANONAUTH = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
