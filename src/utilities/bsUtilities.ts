@@ -11,6 +11,7 @@ export async function CheckIfImage(url: string): Promise<boolean>
         return true;
     }
 
+    if (!url.includes('http://') || !url.includes('https://')) return false;
     // If no extension, try to fetch the headers
     try
     {
