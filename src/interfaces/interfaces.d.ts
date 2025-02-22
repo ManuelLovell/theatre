@@ -1,18 +1,21 @@
-interface IDialog
+interface ITheatreMetadata
 {
     Id: string;
+    SenderId: string;
     Name: string;
     ImageUrl: string;
-    Message: string;
     Type: string;
     TargetId: string;
     Code: string;
 }
 
-interface IBubble
+interface IDialog extends ITheatreMetadata
 {
-    Id: string;
-    Name: string;
+    Message: string;
+}
+
+interface IBubble extends ITheatreMetadata
+{
     Message: string;
     Range: string;
 }
@@ -26,6 +29,7 @@ interface IPlayer
 interface IRumbleLog
 {
     Author: string;
+    SenderId: string;
     Message: string;
     Volume: string;
 }

@@ -148,6 +148,7 @@ class BSCache
 
     private async HandleMessage(metadata: Metadata)
     {
+        //Boxes contain base metadata
         const dialogueCode = metadata[`${Constants.EXTENSIONID}/dialogueCode`];
         const dialogue = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
         const bubble = metadata[`${Constants.EXTENSIONID}/bubbleBox`] as IBubble;
@@ -254,29 +255,31 @@ class BSCache
         }
     }
 
-    private async UpdateRumbleLog(name: string, message: string)
+    private async UpdateRumbleLog(dialogBox: IDialog)
     {
         setTimeout(async function ()
         {
             const rumbleMessage: IRumbleLog = {
-                Author: name,
-                Message: message,
+                Author: dialogBox.Name,
+                SenderId: dialogBox.SenderId,
+                Message: dialogBox.Message,
                 Volume: "said..."
             };
             await OBR.broadcast.sendMessage(Constants.RUMBLECHANNEL, rumbleMessage, { destination: "LOCAL" });
         }, 1000);
     }
 
-    private async UpdateRumbleLogForBubble(metadata: Metadata, range: string)
+    private async UpdateRumbleLogForBubble(bubbleBox: IBubble)
     {
+        // Ignoring Discord Logging via Rumble for Bubble because of the 'hidden' aspects of messages and proximity
         let volume = "said...";
-        if (range === "yell") volume = "yells...";
-        if (range === "whisper") volume = "whispers...";
+        if (bubbleBox.Range === "yell") volume = "yells...";
+        if (bubbleBox.Range === "whisper") volume = "whispers...";
 
-        const dialogContainer = metadata[`${Constants.EXTENSIONID}/bubbleBox`] as IBubble;
         const rumbleMessage: IRumbleLog = {
-            Author: dialogContainer.Name,
-            Message: dialogContainer.Message,
+            Author: bubbleBox.Name,
+            SenderId: bubbleBox.SenderId,
+            Message: bubbleBox.Message,
             Volume: volume
         };
         await OBR.broadcast.sendMessage(Constants.RUMBLECHANNEL, rumbleMessage, { destination: "LOCAL" });
@@ -291,14 +294,12 @@ class BSCache
             {
                 const dialogContainer = metadata[`${Constants.EXTENSIONID}/bubbleBox`] as IBubble;
 
-                // Flag to see if you're the sender
                 const listMessage = document.createElement('li');
-                //listMessage.style.color = dialogContainer.color;
                 listMessage.innerHTML = `<div class="author">${dialogContainer.Name}:</div>➤ ${dialogContainer.Message.trim()}`;
                 chatLog.append(listMessage);
 
                 const bubble = metadata[`${Constants.EXTENSIONID}/bubbleBox`] as IBubble;
-                await this.UpdateRumbleLogForBubble(metadata, bubble.Range);
+                await this.UpdateRumbleLogForBubble(bubble);
             }
         }
         else
@@ -328,11 +329,10 @@ class BSCache
                             segment = `<img class="story-image" src="${segment}" onerror="this.onerror=null;this.src='/failload.png';" width="auto" height="auto">`;
                         }
                     }
-                    // Flag to see if you're the sender
                     const listMessage = document.createElement('li');
                     listMessage.innerHTML = `<div class="author">${dialog.Name}:</div><div class="log-message">➤ ${segment}<div>`;
                     chatLog.append(listMessage);
-                    await this.UpdateRumbleLog(dialog.Name, segment);
+                    await this.UpdateRumbleLog(dialog);
                 }
             }
         }

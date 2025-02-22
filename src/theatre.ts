@@ -152,7 +152,13 @@ class Theatre
     public async SendMessage()
     {
         const useSelectedToken = this.characterSelect.value === Constants.SELECTEDTOKENOPTION;
-        const tokenId = useSelectedToken ? (await OBR.player.getSelection() ?? [])[0] : this.characterSelect.value;
+        const playerSelection = await OBR.player.getSelection() ?? [];
+        const tokenId = useSelectedToken ? playerSelection[0] : this.characterSelect.value;
+        if (!tokenId)
+        {
+            console.log("Unable to find selected token.");
+            return;
+        }
 
         const target = BSCACHE.sceneItems.find(item => item.id === tokenId);
 
@@ -187,8 +193,9 @@ class Theatre
         const tokenName = target.text?.plainText || target.name;
         const name = this.overrideNameInput.value || tokenName;
 
-        const baseMetadata = {
+        const baseMetadata: ITheatreMetadata = {
             Id: target.id,
+            SenderId: BSCACHE.playerId,
             Name: name,
             ImageUrl: target.image.url,
             TargetId: this.playerSelect.value,
@@ -200,12 +207,13 @@ class Theatre
 
         if (messageType === "bubble")
         {
+            const bubbleBox: IBubble = {
+                ...baseMetadata,
+                Message: message,
+                Range: this.messageRange.value
+            };
             metadata = {
-                [`${Constants.EXTENSIONID}/bubbleBox`]: {
-                    ...baseMetadata,
-                    Message: message,
-                    Range: this.messageRange.value
-                } as IBubble
+                [`${Constants.EXTENSIONID}/bubbleBox`]: bubbleBox
             };
         }
         else
