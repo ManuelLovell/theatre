@@ -1,4 +1,4 @@
-import OBR, { Image, Metadata, buildText, Command, buildPath, PathCommand, BoundingBox, Item } from "@owlbear-rodeo/sdk";
+import OBR, { Image, Metadata, buildText, Command, buildPath, PathCommand, BoundingBox, Item, Vector2 } from "@owlbear-rodeo/sdk";
 import { GetGUID } from './bsUtilities';
 import { Constants } from "./bsConstants";
 
@@ -8,6 +8,7 @@ export class LabelLogic
     static async UpdateLabel(image: Image, fontSize: string, opacity: string, message: string, volume: string): Promise<void>
     {
         let volumeColor;
+
         switch (volume)
         {
             case "whisper":
@@ -74,18 +75,40 @@ export class LabelLogic
         // Need offset for consecutive tags per token side
         await OBR.scene.local.addItems([label]);
 
+        // Need to scale the offsets, but the position is generally center of token
+        const scaledOffset: Vector2 =
+        {
+            x: image.grid.offset.x * image.scale.x,
+            y: image.grid.offset.y * image.scale.y
+        };
+
         // Add nameplate
         const freshLabel = await OBR.scene.local.getItems(x => x.metadata[`${Constants.EXTENSIONID}/id`] === bubbleId);
         const labelBounds = await OBR.scene.local.getItemBounds(freshLabel.map(x => x.id));
-        const newHeightAdjustment = labelBounds.height + 100;
+        const imageTop = image.position.y - scaledOffset.y;
 
+        // Let's shove things for huge images
+        const hugeImage = scaledOffset.x > labelBounds.width;
+        const hugeXBounds =
+        {
+            min: image.position.x + scaledOffset.x - labelBounds.width,
+            max: image.position.x + scaledOffset.x
+        };
         const newBounds = {
-            min: { x: labelBounds.min.x, y: labelBounds.min.y - newHeightAdjustment },
-            max: { x: labelBounds.max.x, y: labelBounds.max.y - newHeightAdjustment },
+            min: { x: hugeImage ? hugeXBounds.min : image.position.x, y: imageTop - labelBounds.height },
+            max: { x: hugeImage ? hugeXBounds.max : image.position.x + labelBounds.width, y: imageTop },
             center: { x: labelBounds.center.x, y: labelBounds.center.y - (labelBounds.height + 50) },
             width: labelBounds.width,
             height: labelBounds.height
         } as BoundingBox;
+
+        // const znewBounds = {
+        //     min: { x: labelBounds.min.x, y: labelBounds.min.y - newHeightAdjustment },
+        //     max: { x: labelBounds.max.x, y: labelBounds.max.y - newHeightAdjustment },
+        //     center: { x: labelBounds.center.x, y: labelBounds.center.y - (labelBounds.height + 50) },
+        //     width: labelBounds.width,
+        //     height: labelBounds.height
+        // } as BoundingBox;
 
         const localItems: Item[] = [];
         const plateCommands = GetPlate(newBounds);
@@ -127,7 +150,8 @@ export class LabelLogic
         {
             for (const item of items)
             {
-                item.position.y -= newHeightAdjustment;
+                item.position.y = newBounds.min.y;
+                item.position.x = newBounds.min.x;
                 item.zIndex = (currentZIndex + 3)
                 //item.visible = true;
                 // when getItemBounds for an invisible item is fixed, this can work
@@ -161,7 +185,8 @@ export class LabelLogic
                 [Command.QUAD, minX, maxY, minX + radius, maxY], // Draw the left-bottom rounded corner
 
                 [Command.LINE, minX + (pWidth / 2 - triangleWidth), maxY], // Right vertex
-                [Command.LINE, (image.position.x + (image.image.width / 4)), (image.position.y - (image.image.height / 4))],
+                [Command.LINE, ((image.position.x + scaledOffset.x) - (scaledOffset.x / 2)),
+                ((image.position.y - scaledOffset.y) + (scaledOffset.y / 4)) + 20],
                 [Command.LINE, maxX - (pWidth / 2), maxY], // Draw horizontal line to start of right-bottom rounded corner
 
                 [Command.LINE, maxX - radius, maxY], // Draw horizontal line to start of right-bottom rounded corner
