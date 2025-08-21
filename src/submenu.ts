@@ -10,7 +10,7 @@ await OBR.onReady(async () =>
     const subwindowHtml = document.getElementById('sapp') as HTMLDivElement;
     const currentTheme = await OBR.theme.getTheme();
     SetThemeMode(currentTheme, document);
-
+    addCloseListener();
     const metadata = await OBR.player.getMetadata();
     const dialog = metadata[`${Constants.EXTENSIONID}/dialogueBox`] as IDialog;
 
@@ -49,6 +49,14 @@ await OBR.onReady(async () =>
     }
 
     let pageNumber = 0;
+
+    function addCloseListener()
+    {
+        OBR.broadcast.onMessage(Constants.CLOSECHANNEL, async () =>
+        {
+            await OBR.popover.close(Constants.EXTENSIONID);
+        });
+    }
 
     async function displayCharacter(index: number)
     {

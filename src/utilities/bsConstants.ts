@@ -5,6 +5,7 @@ export class Constants
     static EXTENSIONID = "com.battle-system.theatre";
     static SELECTEDTOKENOPTION = "SELECTED-0000";
     static BROADCASTCHANNEL = "com.battle-system.theatre-broadcast";
+    static CLOSECHANNEL = "com.battle-system.theatre-close";
     static SELFCHANNEL = "com.battle-system.threatre-self";
     static RUMBLECHANNEL = "THEATRERUMBLE";
     static CHECKREGISTRATION = 'https://vrwtdtmnbyhaehtitrlb.supabase.co/functions/v1/patreon-check';

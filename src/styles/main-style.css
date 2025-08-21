@@ -146,6 +146,22 @@ label {
     text-wrap: nowrap;
 }
 
+#closeAllPlayerWindows {
+    background-color: rgb(131, 25, 25);
+    color: var(--OBR-font);
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 10px;
+    width: 120px;
+    height: 22px;
+    line-height: 14px;
+    white-space: nowrap;
+}
+
 /* Style for select element */
 .controlContainer {
     width: 100%;
@@ -372,4 +388,27 @@ a {
 .log-message
 {
     overflow-wrap: anywhere;
+}
+
+.tippy-box[data-theme~='battlesystem'] {
+    font-style: italic;
+    background: var(--OBR-dark-blue);
+    color: var(--OBR-font);
+    border: 1px solid var(--OBR-Purple-Select);
+}
+
+.tippy-box[data-theme~='battlesystem'][data-placement^='top']>.tippy-arrow::before {
+    border-top-color: var(--OBR-dark-blue);
+}
+
+.tippy-box[data-theme~='battlesystem'][data-placement^='bottom']>.tippy-arrow::before {
+    border-bottom-color: var(--OBR-dark-blue);
+}
+
+.tippy-box[data-theme~='battlesystem'][data-placement^='left']>.tippy-arrow::before {
+    border-left-color: var(--OBR-dark-blue);
+}
+
+.tippy-box[data-theme~='battlesystem'][data-placement^='right']>.tippy-arrow::before {
+    border-right-color: var(--OBR-dark-blue);
 }

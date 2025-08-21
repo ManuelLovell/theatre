@@ -3,6 +3,8 @@ import { BSCACHE } from './utilities/bsSceneCache';
 import * as Utilities from './utilities/bsUtilities';
 import * as showdown from 'showdown';
 import { Constants } from './utilities/bsConstants';
+import 'tippy.js/dist/border.css';
+import { CreateTooltips } from './utilities/bsTooltips';
 
 class Theatre
 {
@@ -16,6 +18,7 @@ class Theatre
     public helpPanel = document.getElementById("helpPanel") as HTMLDivElement;
 
     public sendButton = document.getElementById("sendMessage") as HTMLButtonElement;
+    public closeAllPlayerWindows = document.getElementById("closeAllPlayerWindows") as HTMLButtonElement;
 
     public patreonContainer = document.getElementById("patreonContainer") as HTMLDivElement;
     public characterSelectLabel = document.getElementById('characterLabel') as HTMLSelectElement;
@@ -49,6 +52,7 @@ class Theatre
         this.SetupHelp();
         this.SetupItemSelect();
         this.UpdatePlayerSelect();
+        CreateTooltips();
     }
 
     public SetupHelp()
@@ -136,17 +140,34 @@ class Theatre
             {
                 await OBR.scene.setMetadata({ [`${Constants.EXTENSIONID}/yell`]: this.yellDistance.value });
             };
+            this.closeAllPlayerWindows.onclick = async () =>
+            {
+                await this.CloseAllPlayerWindows();
+            }
         }
         else
         {
             this.talkDistance.disabled = true;
             this.whisperDistance.disabled = true;
             this.yellDistance.disabled = true;
+            this.closeAllPlayerWindows.style.display = "none";
         }
 
         this.talkDistance.value = BSCACHE.sceneMetadata[`${Constants.EXTENSIONID}/talk`] as string ?? "5";
         this.whisperDistance.value = BSCACHE.sceneMetadata[`${Constants.EXTENSIONID}/whisper`] as string ?? "1";
         this.yellDistance.value = BSCACHE.sceneMetadata[`${Constants.EXTENSIONID}/yell`] as string ?? "10";
+    }
+
+    public async CloseAllPlayerWindows()
+    {
+        if (BSCACHE.playerRole !== "GM")
+        {
+            await OBR.notification.show("Only the GM can close all player windows.", "ERROR");
+            return;
+        }
+
+        await OBR.broadcast.sendMessage(Constants.CLOSECHANNEL, true);
+        await OBR.notification.show("All player windows closed.", "SUCCESS");
     }
 
     public async SendMessage()
