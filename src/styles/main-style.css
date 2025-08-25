@@ -146,6 +146,20 @@ label {
     text-wrap: nowrap;
 }
 
+#accessStorage {
+    width: 100px;
+    line-height: 14px;
+    white-space: nowrap;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    margin-left: 10px;
+    color: var(--OBR-font);
+    font-weight: bold;
+    background-color: var(--OBR-Purple-Select-transparent);
+}
+
 #closeAllPlayerWindows {
     background-color: rgb(131, 25, 25);
     color: var(--OBR-font);
@@ -222,6 +236,11 @@ label {
     background-color: var(--OBR-dark-blue-transparent);
 }
 
+#bottomControlWrapper{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
 /* Style for the submit button */
 #sendMessage {
     border-radius: 6px;
@@ -350,6 +369,16 @@ a {
     height: 25px;
     width: 25px;
     filter: var(--invert);
+}
+
+.storage-icon {
+    color: var(--OBR-Purple-Select);
+    font-size: larger;
+    cursor: pointer;
+    background-color: transparent;
+    width: 28px;
+    height: 28px;
+    margin-top:4px;
 }
 
 .clickable:active {

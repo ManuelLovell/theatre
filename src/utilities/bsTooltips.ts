@@ -25,7 +25,8 @@ export function CreateTooltips()
     tooltips.set(`OverrideName`, "Override the token's display name for this message");
     tooltips.set(`MessageType`, "Choose the style of message to display");
     tooltips.set(`ViewMessage`, "Automatically view the message window after sending");
-    
+    tooltips.set(`dialogStorage`, "Access the dialog storage for saved dialogs");
+
     // Distance Controls
     tooltips.set(`whisperDistance`, "Set the range for whisper messages used with Speech Bubbles");
     tooltips.set(`talkDistance`, "Set the range for normal talk messages used with Speech Bubbles");

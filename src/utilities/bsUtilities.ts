@@ -222,11 +222,11 @@ export function TestEnvironment()
     try
     {
         localStorage.setItem("STORAGECHECK", "test");
+        return true;
     }
     catch (error)
     {
-        const storageWarningElement = document.getElementById("localStorageWarning")!;
-        storageWarningElement.innerText = "Local Storage disabled. Some features will not function.";
+        return false;
     }
 }
 

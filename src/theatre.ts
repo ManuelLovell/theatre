@@ -19,6 +19,7 @@ class Theatre
 
     public sendButton = document.getElementById("sendMessage") as HTMLButtonElement;
     public closeAllPlayerWindows = document.getElementById("closeAllPlayerWindows") as HTMLButtonElement;
+    public storageButton = document.getElementById("accessStorage") as HTMLButtonElement;
 
     public patreonContainer = document.getElementById("patreonContainer") as HTMLDivElement;
     public characterSelectLabel = document.getElementById('characterLabel') as HTMLSelectElement;
@@ -36,6 +37,8 @@ class Theatre
     public messageRange = document.getElementById('messageRange') as HTMLSelectElement;
     public messageRangeHolder = document.getElementById("rangeSelectHolder") as HTMLDivElement;
 
+    public localStorageEnabled = false;
+
     public broadcaster = new BroadcastChannel(Constants.SELFCHANNEL);
 
     version: string;
@@ -43,6 +46,12 @@ class Theatre
     constructor(version: string)
     {
         this.version = `THEATRE-${version}`;
+        this.localStorageEnabled = Utilities.TestEnvironment();
+        if (!this.localStorageEnabled)
+        {
+            this.storageButton.disabled = true;
+            this.storageButton.title = "Local Storage is not available";
+        }
     }
 
     public async StartThreatre()
@@ -125,6 +134,22 @@ class Theatre
             e.preventDefault();
             await this.SendMessage();
         };
+        this.storageButton.onclick = async (e) =>
+        {
+            e.preventDefault();
+            if (this.localStorageEnabled)
+            {
+                await OBR.modal.open({
+                    id: Constants.STORAGEID,
+                    url: `/submenu/storage.html`,
+                    width: 720,
+                    height: 520,
+                    fullScreen: false,
+                    hideBackdrop: true,
+                    hidePaper: true,
+                });
+            }
+        }
 
         if (BSCACHE.playerRole === "GM")
         {

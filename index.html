@@ -67,7 +67,7 @@
                         <select id="PlayerSelect"></select>
                         <button id="closeAllPlayerWindows">Close All</button>
                     </div>
-                    <div id="rangeSelectHolder"  class="controlContainer">
+                    <div id="rangeSelectHolder" class="controlContainer">
                         <label for="messageRange" title="This is for Speech Bubbles only.">Range:</label>
                         <select id="messageRange" title="This is for Speech Bubbles only.">
                             <option value="whisper">Whisper</option>
@@ -76,7 +76,12 @@
                         </select>
                     </div>
                 </div>
-                <button id="sendMessage">SUBMIT</button>
+                <div id="bottomControlWrapper">
+                    <button id="sendMessage">SUBMIT</button>
+                    <button id="accessStorage">
+                        <img id="dialogStorage" class="storage-icon" src="/storage.svg">
+                    </button>
+                </div>
             </div>
         </div>
         <div id="historyPanel" class="panel" style="display: none;">

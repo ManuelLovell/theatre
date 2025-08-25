@@ -350,6 +350,21 @@ class BSCache
         {
             await this.HandleMessage(data.data as any);
         });
+
+        OBR.broadcast.onMessage(Constants.STORAGECHANNEL, async (data) =>
+        {
+            const messageInfo = data.data as IStorageItem;
+            if (messageInfo.text) THEATRE.messageTextarea.value = messageInfo.text;
+            if (messageInfo.overrideName) THEATRE.overrideNameInput.value = messageInfo.overrideName;
+            if (messageInfo.tokenId)
+            {
+                const foundToken = BSCACHE.sceneItems.find(x => x.id === messageInfo.tokenId);
+                if (foundToken)
+                {
+                    THEATRE.characterSelect.value = foundToken.id;
+                }
+            }
+        });
     }
 
     public KillHandlers()

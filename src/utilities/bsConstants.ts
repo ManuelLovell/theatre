@@ -3,8 +3,10 @@ import { Command, PathCommand } from "@owlbear-rodeo/sdk";
 export class Constants
 {
     static EXTENSIONID = "com.battle-system.theatre";
+    static STORAGEID = "com.battle-system.theatre-storage";
     static SELECTEDTOKENOPTION = "SELECTED-0000";
     static BROADCASTCHANNEL = "com.battle-system.theatre-broadcast";
+    static STORAGECHANNEL = "com.battle-system.theatre-storage-broadcast";
     static CLOSECHANNEL = "com.battle-system.theatre-close";
     static SELFCHANNEL = "com.battle-system.threatre-self";
     static RUMBLECHANNEL = "THEATRERUMBLE";

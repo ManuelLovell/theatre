@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" class="popColor">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="max-age=0, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Theatre! Storage</title>
+</head>
+
+<body>
+    <div id="storageapp">
+        <div class="dialogue-explorer">
+            <div class="dialogue-header">
+                <h2 class="dialogue-title">Theatre Dialog Bank</h2>
+                <button class="add-dialogue-btn" id="addDialogue">+ New Dialogue</button>
+                <button class="close-button" id="closeExplorer"><img id="dialog-close" class="close-icon" style="display: none" src="/close.svg"></button>
+            </div>
+            <div class="dialogue-content">
+                <div class="dialogue-list">
+                    <div id="dialogueItems"></div>
+                </div>
+                <div class="dialogue-editor">
+                    <div id="editorContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/src/storage.ts"></script>
+</body>
+
+</html>

@@ -9,6 +9,16 @@ interface ITheatreMetadata
     Code: string;
 }
 
+interface IStorageItem
+{
+    id: string;
+    tokenId: string;
+    overrideName: string;
+    text: string;
+    title: string;
+    tokenImage: string;
+}
+
 interface IDialog extends ITheatreMetadata
 {
     Message: string;
