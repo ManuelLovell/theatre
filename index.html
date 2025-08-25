@@ -6,10 +6,10 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Theatre!</title>
-  <script type="module" crossorigin src="/assets/main-COxSnyKG.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/bsSceneCache-BxYPu7LG.js">
+  <script type="module" crossorigin src="/assets/main-BlAftT8a.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/bsSceneCache-CpvUFMs4.js">
   <link rel="stylesheet" crossorigin href="/assets/bsSceneCache-CGdXv64t.css">
-  <link rel="stylesheet" crossorigin href="/assets/main-B3SDX-U3.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-f6toSI_y.css">
 </head>
 
 <body>
@@ -71,7 +71,7 @@
                         <select id="PlayerSelect"></select>
                         <button id="closeAllPlayerWindows">Close All</button>
                     </div>
-                    <div id="rangeSelectHolder"  class="controlContainer">
+                    <div id="rangeSelectHolder" class="controlContainer">
                         <label for="messageRange" title="This is for Speech Bubbles only.">Range:</label>
                         <select id="messageRange" title="This is for Speech Bubbles only.">
                             <option value="whisper">Whisper</option>
@@ -80,7 +80,12 @@
                         </select>
                     </div>
                 </div>
-                <button id="sendMessage">SUBMIT</button>
+                <div id="bottomControlWrapper">
+                    <button id="sendMessage">SUBMIT</button>
+                    <button id="accessStorage">
+                        <img id="dialogStorage" class="storage-icon" src="/storage.svg">
+                    </button>
+                </div>
             </div>
         </div>
         <div id="historyPanel" class="panel" style="display: none;">
