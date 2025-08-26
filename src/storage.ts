@@ -103,7 +103,6 @@ class DialogueExplorer {
             '<button type="button" class="mobile-back-button" id="mobileBack">← Back to List</button>' : '';
 
         container.innerHTML = `
-            ${mobileBackButton}
             <form class="dialogue-form" id="dialogueForm">
                 <div class="form-row">
                     <div class="form-group form-group-half">
@@ -131,8 +130,9 @@ class DialogueExplorer {
                 </div>
                 
                 <div class="form-buttons">
-                    <button type="submit" class="btn btn-primary">Save Dialogue</button>
+                    ${mobileBackButton}
                     <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Dialogue</button>
                 </div>
             </form>
         `;

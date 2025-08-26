@@ -159,7 +159,6 @@ body {
 .dialogue-item {
     background: var(--OBR-light-blue);
     border: 1px solid var(--soft-outline);
-    width:250px;
     border-radius: 6px;
     padding: 12px;
     margin-bottom: 8px;
@@ -330,7 +329,6 @@ body {
 .form-group-half {
     flex: 1;
     min-width: 0; /* Allow flex items to shrink */
-    width: 0; /* Force equal width distribution */
 }
 
 /* Responsive design */
@@ -381,7 +379,6 @@ body {
         padding: 8px 16px;
         border-radius: 4px;
         cursor: pointer;
-        margin-bottom: 12px;
         font-family: inherit;
     }
 
