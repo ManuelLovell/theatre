@@ -1,4 +1,4 @@
-import{O as o,S as y,C as n,a as h}from"./bsSceneCache-C_5PpwJt.js";class m{static StoryForm=()=>`
+import{O as o,S as y,C as n,a as h}from"./bsSceneCache-Cf7b9lp_.js";class m{static StoryForm=()=>`
         <div class="story-header">
             <img id="dialog-close" class="close-icon" src="/close.svg">
             <img id="dialog-forward" class="forward-icon" src="/play.svg" hidden>
