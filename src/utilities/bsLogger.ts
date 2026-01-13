@@ -3,7 +3,7 @@
  * Set DEBUG to true to enable console logging
  */
 
-const DEBUG = true;
+const DEBUG = false;
 
 export const Logger = {
     log: (...args: any[]) => {
