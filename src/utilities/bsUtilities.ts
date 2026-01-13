@@ -1,6 +1,5 @@
-import OBR, { Item, Image, Theme } from "@owlbear-rodeo/sdk";
+import { Item, Image, Theme } from "@owlbear-rodeo/sdk";
 import { BSCACHE } from "./bsSceneCache";
-import { Constants } from "./bsConstants";
 
 export async function CheckIfImage(url: string): Promise<boolean>
 {
@@ -35,45 +34,6 @@ export async function CheckIfImage(url: string): Promise<boolean>
     {
         console.error('Error checking image URL:', error);
         return false;
-    }
-}
-
-// Keep the Chronicle header at the top
-export async function RequestData(requestUrl: string, requestPackage: any): Promise<BSData>
-{
-    try
-    {
-        const debug = window.location.origin.includes("localhost") ? "eternaldream" : "";
-
-        const requestOptions = {
-            method: "POST",
-            headers: new Headers({
-                "Content-Type": "application/json",
-                "Authorization": Constants.ANONAUTH,
-                "x-manuel": debug
-            }),
-            body: JSON.stringify(requestPackage),
-        };
-        const response = await fetch(requestUrl, requestOptions);
-
-        const data = await response.json();
-        if (!response.ok)
-        {
-            // Handle error data
-            await OBR.notification.show("There was an error retrieving your data, please refresh the page. If this issue persists, wait a few minutes as the server could be experiences difficulties.");
-            console.error("Error:", data);
-        }
-        else
-        {
-            return data;
-        }
-    }
-    catch (error)
-    {
-        // Handle errors
-        await OBR.notification.show("There was an error retrieving your data, please refresh the page. If this issue persists, wait a few minutes as the server could be experiences difficulties.");
-        console.error("Error:", error);
-        return null;
     }
 }
 

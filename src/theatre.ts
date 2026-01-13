@@ -3,6 +3,7 @@ import { BSCACHE } from './utilities/bsSceneCache';
 import * as Utilities from './utilities/bsUtilities';
 import * as showdown from 'showdown';
 import { Constants } from './utilities/bsConstants';
+import { Logger } from './utilities/bsLogger';
 import 'tippy.js/dist/border.css';
 import { CreateTooltips } from './utilities/bsTooltips';
 
@@ -139,9 +140,14 @@ class Theatre
             e.preventDefault();
             if (this.localStorageEnabled)
             {
+                // Ensure dialogue cache is loaded before opening modal
+                if (!BSCACHE.dialogueCacheLoaded) {
+                    await BSCACHE.LoadDialogueCache();
+                }
+                
                 await OBR.modal.open({
                     id: Constants.STORAGEID,
-                    url: `/submenu/storage.html`,
+                    url: `/submenu/storage.html?registered=${BSCACHE.USER_REGISTERED ? "true" : "false"}`,
                     width: 720,
                     height: 520,
                     fullScreen: false,
@@ -202,7 +208,6 @@ class Theatre
         const tokenId = useSelectedToken ? playerSelection[0] : this.characterSelect.value;
         if (!tokenId)
         {
-            console.log("Unable to find selected token.");
             return;
         }
 
@@ -210,7 +215,6 @@ class Theatre
 
         if (!target || !target.image?.url)
         {
-            console.log("Unable to find image for Message.");
             return;
         }
         if (target.createdUserId !== BSCACHE.playerId && BSCACHE.playerRole !== "GM")
@@ -230,7 +234,7 @@ class Theatre
             }
             else
             {
-                console.log("No message has been entered to send.");
+                Logger.log("No message has been entered to send.");
                 return;
             }
         }

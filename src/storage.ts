@@ -1,36 +1,49 @@
 import OBR, {Image} from "@owlbear-rodeo/sdk";
 import { Constants } from "./utilities/bsConstants";
-import { SetThemeMode } from "./utilities/bsUtilities";
-import './styles/storage-style.css'
-
-interface DialogueItem {
-    id: string;
-    title: string;
-    text: string;
-    overrideName?: string; // Add this new field
-    tokenId?: string;
-    tokenName?: string;
-    tokenImage?: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-interface Token {
-    id: string;
-    name: string;
-    image: string;
-}
+import { GetGUID, SetThemeMode } from "./utilities/bsUtilities";
+import { DialogueStorageManager } from "./storage-savelayer";
+import { Logger } from "./utilities/bsLogger";
+import './styles/storage-style.css';
 
 class DialogueExplorer {
-    private dialogues: DialogueItem[] = [];
-    private tokens: Token[] = [];
-    private selectedDialogue: DialogueItem | null = null;
+    private tokens: IToken[] = [];
+    private selectedDialogue: IDialogueItem | null = null;
     private isMobileView: boolean = false;
+    private storageManager: DialogueStorageManager;
 
-    constructor() {
-        this.loadDialogues();
+    constructor(registered: boolean = false) {
+        this.storageManager = new DialogueStorageManager(registered);
+        this.init();
+    }
+
+    private async init(): Promise<void> {
+        // Set up event delegation ONCE at init
+        this.bindEvents();
+        
+        // Set up listener for dialogues from parent window FIRST (on response channel)
+        OBR.broadcast.onMessage(Constants.EXTENSIONID + '/dialogue-response', (event) => {
+            const data = event.data as any;
+            if (data.type === 'DIALOGUES_DATA') {
+                Logger.log('[Storage] Received', data.dialogues.length, 'dialogues from parent');
+                this.storageManager.dialogues = data.dialogues;
+                this.storageManager.isUserRegistered = data.registered;
+                // Re-render with the new data
+                this.renderDialogueList();
+                this.renderEditor();
+            }
+        });
+        
+        // Request dialogues from parent (response will come via broadcast on different channel)
+        Logger.log('[Storage] Requesting dialogues from parent window');
+        await OBR.broadcast.sendMessage(Constants.EXTENSIONID + '/dialogue-request', { 
+            type: 'REQUEST_DIALOGUES' 
+        }, { destination: "LOCAL" });
+        
+        // Render immediately (may be empty initially, will update when data arrives)
         this.checkMobileView();
-        this.render();
+        this.renderDialogueList();
+        this.renderEditor();
+        
         // Listen for window resize to update mobile view
         window.addEventListener('resize', () => {
             this.checkMobileView();
@@ -41,34 +54,16 @@ class DialogueExplorer {
         this.isMobileView = window.innerWidth <= 600;
     }
 
-    private loadDialogues(): void {
-        const saved = localStorage.getItem('theatre-dialogues');
-        if (saved) {
-            this.dialogues = JSON.parse(saved).map((d: any) => ({
-                ...d,
-                createdAt: new Date(d.createdAt),
-                updatedAt: new Date(d.updatedAt)
-            }));
-        }
-    }
-
-    private saveDialogues(): void {
-        localStorage.setItem('theatre-dialogues', JSON.stringify(this.dialogues));
-    }
-
     private generateId(): string {
+        if (this.storageManager.isUserRegistered) {
+            return GetGUID();
+        }
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    }
-
-    private render(): void {
-        this.renderDialogueList();
-        this.renderEditor();
-        this.bindEvents();
     }
 
     private renderDialogueList(): void {
         const container = document.getElementById('dialogueItems')!;
-        container.innerHTML = this.dialogues.map(dialogue => `
+        container.innerHTML = this.storageManager.dialogues.map(dialogue => `
             <div class="dialogue-item ${this.selectedDialogue?.id === dialogue.id ? 'selected' : ''}" 
                  data-id="${dialogue.id}">
                 <div class="dialogue-item-header">
@@ -82,9 +77,6 @@ class DialogueExplorer {
                 </div>
             </div>
         `).join('');
-
-        // Re-bind events after updating the DOM
-        this.bindListEvents();
     }
 
     private renderEditor(): void {
@@ -172,33 +164,39 @@ class DialogueExplorer {
             this.createNewDialogue();
         });
 
-        this.bindListEvents();
-    }
-
-    private bindListEvents(): void {
-        document.querySelectorAll('.dialogue-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                if ((e.target as HTMLElement).classList.contains('btn')) return;
-                const id = (item as HTMLElement).dataset.id!;
-                this.selectDialogue(id);
+        // Event delegation for list items - bind once to container
+        const container = document.getElementById('dialogueItems');
+        if (container && !container.dataset.bound) {
+            container.dataset.bound = 'true';
+            container.addEventListener('click', (e) => {
+                const target = e.target as HTMLElement;
+                
+                // Handle send button
+                if (target.classList.contains('send-dialogue') || target.closest('.send-dialogue')) {
+                    e.stopPropagation();
+                    const btn = target.closest('.send-dialogue') as HTMLElement;
+                    const id = btn?.dataset.id;
+                    if (id) this.sendDialogue(id);
+                    return;
+                }
+                
+                // Handle delete button
+                if (target.classList.contains('delete-dialogue') || target.closest('.delete-dialogue')) {
+                    e.stopPropagation();
+                    const btn = target.closest('.delete-dialogue') as HTMLElement;
+                    const id = btn?.dataset.id;
+                    if (id) this.deleteDialogue(id);
+                    return;
+                }
+                
+                // Handle dialogue item click (if not a button)
+                if (!target.classList.contains('btn') && !target.closest('.btn')) {
+                    const item = target.closest('.dialogue-item') as HTMLElement;
+                    const id = item?.dataset.id;
+                    if (id) this.selectDialogue(id);
+                }
             });
-        });
-
-        document.querySelectorAll('.send-dialogue').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = (btn as HTMLElement).dataset.id!;
-                this.sendDialogue(id);
-            });
-        });
-
-        document.querySelectorAll('.delete-dialogue').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = (btn as HTMLElement).dataset.id!;
-                this.deleteDialogue(id);
-            });
-        });
+        }
     }
 
     private bindEditorEvents(): void {
@@ -238,27 +236,27 @@ class DialogueExplorer {
     }
 
     private createNewDialogue(): void {
-        const newDialogue: DialogueItem = {
+        const newDialogue: IDialogueItem = {
             id: this.generateId(),
             title: '',
             text: '',
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
         };
         
-        this.dialogues.unshift(newDialogue);
+        this.storageManager.dialogues.unshift(newDialogue);
         this.selectedDialogue = newDialogue;
         this.renderDialogueList();
         this.renderEditor();
     }
 
     private selectDialogue(id: string): void {
-        this.selectedDialogue = this.dialogues.find(d => d.id === id) || null;
+        this.selectedDialogue = this.storageManager.dialogues.find(d => d.id === id) || null;
         this.renderDialogueList();
         this.renderEditor();
     }
 
-    private saveCurrentDialogue(): void {
+    private async saveCurrentDialogue(): Promise<void> {
         if (!this.selectedDialogue) return;
 
         const titleInput = document.getElementById('dialogueTitle') as HTMLInputElement;
@@ -284,12 +282,19 @@ class DialogueExplorer {
             this.selectedDialogue.tokenImage = undefined;
         }
 
-        this.saveDialogues();
+        await this.storageManager.saveDialogues(this.selectedDialogue.id);
+        
+        // Notify parent window to update cache via broadcast
+        await OBR.broadcast.sendMessage(Constants.EXTENSIONID + '/dialogue-request', {
+            type: 'UPDATE_DIALOGUE',
+            dialogue: this.selectedDialogue
+        }, { destination: "LOCAL" });
+        
         this.renderDialogueList();
     }
 
     private async sendDialogue(id: string): Promise<void> {
-        const dialogue = this.dialogues.find(d => d.id === id);
+        const dialogue = this.storageManager.dialogues.find(d => d.id === id);
         if (!dialogue) return;
 
         try {
@@ -299,20 +304,26 @@ class DialogueExplorer {
         }
     }
 
-    private deleteDialogue(id: string): void {
+    private async deleteDialogue(id: string): Promise<void> {
         if (!confirm('Are you sure you want to delete this dialogue?')) return;
         
-        this.dialogues = this.dialogues.filter(d => d.id !== id);
+        await this.storageManager.deleteDialogue(id);
+        
+        // Notify parent window to update cache via broadcast
+        await OBR.broadcast.sendMessage(Constants.EXTENSIONID + '/dialogue-request', {
+            type: 'DELETE_DIALOGUE',
+            id: id
+        }, { destination: "LOCAL" });
+        
         if (this.selectedDialogue?.id === id) {
             this.selectedDialogue = null;
         }
         
-        this.saveDialogues();
         this.renderDialogueList();
         this.renderEditor();
     }
 
-    public setTokens(tokens: Token[]): void {
+    public setTokens(tokens: IToken[]): void {
         this.tokens = tokens;
         if (this.selectedDialogue) {
             this.renderEditor();
@@ -329,12 +340,16 @@ await OBR.onReady(async () =>
     const currentTokens = await OBR.scene.items.getItems<Image>(x => x.layer === "CHARACTER" && x.type === "IMAGE");
 
     // Convert OBR items to our Token interface
-    const tokens: Token[] = currentTokens.map(item => ({
+    const tokens: IToken[] = currentTokens.map(item => ({
         id: item.id,
         name: item.name || 'Unnamed Token',
         image: item.image.url || ''
     }));
 
-    const explorer = new DialogueExplorer();
+    // Check registration from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const registered = urlParams.get('registered') === 'true';
+
+    const explorer = new DialogueExplorer(registered);
     explorer.setTokens(tokens);
 });

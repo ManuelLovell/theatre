@@ -43,3 +43,29 @@ interface IRumbleLog
     Message: string;
     Volume: string;
 }
+
+interface IDialgoue
+{
+    title: string;
+    text: string;
+    token: string | null;
+}
+
+interface IDialogueItem {
+    id: string;
+    title: string;
+    text: string;
+    overrideName?: string; // Add this new field
+    tokenId?: string;
+    tokenName?: string;
+    tokenImage?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    theatre_id?: string;
+}
+
+interface IToken {
+    id: string;
+    name: string;
+    image: string;
+}

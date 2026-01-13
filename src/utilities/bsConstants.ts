@@ -8,9 +8,12 @@ export class Constants
     static BROADCASTCHANNEL = "com.battle-system.theatre-broadcast";
     static STORAGECHANNEL = "com.battle-system.theatre-storage-broadcast";
     static CLOSECHANNEL = "com.battle-system.theatre-close";
-    static SELFCHANNEL = "com.battle-system.threatre-self";
+    static SELFCHANNEL = "com.battle-system.theatre-self";
     static RUMBLECHANNEL = "THEATRERUMBLE";
+    static CACHECHANNEL = "com.battle-system.theatre-cache";
+    static STORAGEKEY = 'theatre-dialogues';
     static CHECKREGISTRATION = 'https://vrwtdtmnbyhaehtitrlb.supabase.co/functions/v1/patreon-check';
+    static REMOTESTORAGEURL = 'https://vrwtdtmnbyhaehtitrlb.supabase.co/functions/v1/theatre-storage';
 
     static ANONAUTH = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
     static CLOSEBUTTON: PathCommand[] = [
