@@ -4,6 +4,7 @@ import { GetGUID, SetThemeMode } from "./utilities/bsUtilities";
 import { DialogueStorageManager } from "./storage-savelayer";
 import { Logger } from "./utilities/bsLogger";
 import './styles/storage-style.css';
+import { CreateStorageToolTips } from "./utilities/bsTooltips";
 
 class DialogueExplorer {
     private tokens: IToken[] = [];
@@ -43,6 +44,7 @@ class DialogueExplorer {
         this.checkMobileView();
         this.renderDialogueList();
         this.renderEditor();
+        CreateStorageToolTips();
         
         // Listen for window resize to update mobile view
         window.addEventListener('resize', () => {
@@ -160,7 +162,19 @@ class DialogueExplorer {
             OBR.modal.close(Constants.STORAGEID);
         });
 
-        document.getElementById('addDialogue')?.addEventListener('click', () => {
+        // Export JSON logic
+        document.getElementById('exportExplorer')?.addEventListener('click', () => {
+            this.exportDialoguesToJSON();
+        });
+
+        // Import JSON logic
+        document.getElementById('importExplorer')?.addEventListener('click', () => {
+            this.importDialoguesFromJSON();
+        });
+
+        const addDialogueBtn = document.getElementById('addDialogue');
+        addDialogueBtn!.innerText = this.isMobileView ? " + " : "+ New Dialogue";
+        addDialogueBtn?.addEventListener('click', () => {
             this.createNewDialogue();
         });
 
@@ -321,6 +335,91 @@ class DialogueExplorer {
         
         this.renderDialogueList();
         this.renderEditor();
+    }
+
+    /**
+     * Export all dialogues to JSON file (uses localStorage format)
+     */
+    private exportDialoguesToJSON(): void {
+        Logger.log('[Storage] Exporting dialogues to JSON');
+        
+        // Get all current dialogues
+        const exportData = JSON.stringify(this.storageManager.dialogues, null, 2);
+        
+        // Create blob and download
+        const blob = new Blob([exportData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `theatre-dialogues-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        Logger.log('[Storage] Export complete');
+    }
+
+    /**
+     * Import dialogues from JSON file (merges with existing data)
+     */
+    private importDialoguesFromJSON(): void {
+        Logger.log('[Storage] Opening file picker for import');
+        
+        // Create file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = async (e: Event) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (!file) return;
+            
+            try {
+                const text = await file.text();
+                const importedDialogues: IDialogueItem[] = JSON.parse(text);
+                
+                Logger.log('[Storage] Importing', importedDialogues.length, 'dialogues');
+                
+                // Parse dates
+                const parsedDialogues = importedDialogues.map(d => ({
+                    ...d,
+                    createdAt: new Date(d.createdAt),
+                    updatedAt: new Date(d.updatedAt)
+                }));
+                
+                // Merge with existing dialogues using the same merge logic
+                const merged = this.storageManager.mergeDialoguesPublic(
+                    this.storageManager.dialogues,
+                    parsedDialogues
+                );
+                
+                // Update dialogues and save to localStorage
+                this.storageManager.dialogues = merged;
+                this.storageManager.saveToLocalStorage();
+                
+                // Notify parent to update cache
+                for (const dialogue of parsedDialogues) {
+                    await OBR.broadcast.sendMessage(Constants.EXTENSIONID + '/dialogue-request', {
+                        type: 'UPDATE_DIALOGUE',
+                        dialogue: dialogue
+                    }, { destination: "LOCAL" });
+                }
+                
+                // Re-render
+                this.renderDialogueList();
+                this.renderEditor();
+                
+                Logger.log('[Storage] Import complete, merged to', merged.length, 'total dialogues');
+                alert(`Successfully imported ${importedDialogues.length} dialogue(s)!`);
+                
+            } catch (error) {
+                Logger.error('[Storage] Import failed:', error);
+                alert('Failed to import dialogues. Please check the file format.');
+            }
+        };
+        
+        input.click();
     }
 
     public setTokens(tokens: IToken[]): void {

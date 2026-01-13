@@ -4,7 +4,6 @@ import * as Utilities from './utilities/bsUtilities';
 import * as showdown from 'showdown';
 import { Constants } from './utilities/bsConstants';
 import { Logger } from './utilities/bsLogger';
-import 'tippy.js/dist/border.css';
 import { CreateTooltips } from './utilities/bsTooltips';
 
 class Theatre

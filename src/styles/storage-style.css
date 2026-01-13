@@ -116,19 +116,15 @@ body {
     color: var(--OBR-offset-fore);
 }
 
-.close-button {
+.storage-button {
     background: none;
     border: none;
     color: var(--foreground-color);
     cursor: pointer;
     font-size: 1.2em;
-    padding: 4px 8px;
+    padding: 2px 4px;
     border-radius: 4px;
     transition: background-color 0.2s;
-}
-
-.close-button:hover {
-    background-color: var(--OBR-light-blue);
 }
 
 .dialogue-content {
@@ -300,6 +296,7 @@ body {
     border-radius: 4px;
     cursor: pointer;    
     width: 100%;
+    margin-left: 12px;
 }
 
 .add-dialogue-btn:hover {
@@ -403,6 +400,10 @@ body {
     height: 28px;
     margin-top:4px;
     margin-left:12px;
+}
+
+.close-icon:hover {
+    background-color: var(--OBR-light-blue);
 }
 
 /* Scroll Bars */

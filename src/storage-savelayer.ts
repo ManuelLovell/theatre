@@ -202,4 +202,22 @@ export class DialogueStorageManager {
             this.saveLocalDialogues(this.dialogues);
         }
     }
+
+    /**
+     * Public method to merge dialogues (used by import functionality)
+     * @param local - Existing dialogues
+     * @param imported - Imported dialogues
+     * @returns Merged array with duplicates resolved by newest updatedAt
+     */
+    public mergeDialoguesPublic(local: IDialogueItem[], imported: IDialogueItem[]): IDialogueItem[] {
+        return this.mergeDialogues(local, imported);
+    }
+
+    /**
+     * Public method to save current dialogues to localStorage
+     * Used by import functionality to persist merged data
+     */
+    public saveToLocalStorage(): void {
+        this.saveLocalDialogues(this.dialogues);
+    }
 }

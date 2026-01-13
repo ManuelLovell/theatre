@@ -1,4 +1,6 @@
 import tippy from 'tippy.js';
+import '../styles/tippy.css'
+import 'tippy.js/dist/border.css';
 import 'tippy.js/dist/tippy.css';
 
 function SetupTooltips(idSelect: string, tooltipContent: string)
@@ -10,6 +12,15 @@ function SetupTooltips(idSelect: string, tooltipContent: string)
         theme: 'battlesystem',
     });
 };
+
+export function CreateStorageToolTips()
+{
+    const tooltips = new Map<string, string>();
+    tooltips.set(`importExplorer`, "Import dialogues from a JSON file");
+    tooltips.set(`exportExplorer`, "Export your dialogues to a JSON file");
+    tooltips.set(`closeExplorer`, "Close the dialogue storage window");
+    tooltips.forEach((value, key) => { SetupTooltips(key, value); });
+}
 
 export function CreateTooltips()
 {
