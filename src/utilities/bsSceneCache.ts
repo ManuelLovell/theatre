@@ -4,6 +4,17 @@ import { THEATRE } from '../theatre';
 import { Constants } from "./bsConstants";
 import { LabelLogic } from './bsLabelLogic';
 import { Logger } from './bsLogger';
+import { supabase } from './supabaseClient';
+import { CacheStatus, LookupSource, TrackRegistrationCheckEvent } from './bsMetrics';
+
+type RegistrationCacheEntry = {
+    playerId: string;
+    registered: boolean;
+    tier: string;
+    lookupSource?: LookupSource;
+    checkedAt: number;
+    lastFailureAt?: number;
+};
 
 class BSCache {
     // Cache Names
@@ -47,6 +58,7 @@ class BSCache {
     caches: string[];
     USER_REGISTERED: boolean;
     historyLog: Record<string, {}>;
+    private registrationCheckPromise: Promise<boolean> | null;
     
     // Dialogue cache - persists in main window memory
     dialogueCache: IDialogueItem[] = [];
@@ -85,6 +97,7 @@ class BSCache {
         this.USER_REGISTERED = false;
         this.caches = caches;
         this.historyLog = {};
+        this.registrationCheckPromise = null;
 
         // Large singular updates to sceneItems can cause the resulting onItemsChange to proc multiple times, at the same time
         this.debouncedOnSceneItemsChange = Utilities.Debounce(this.OnSceneItemsChange.bind(this) as any, 100);
@@ -507,38 +520,242 @@ class BSCache {
     }
 
     public async CheckRegistration() {
+        if (this.registrationCheckPromise) {
+            this.USER_REGISTERED = await this.registrationCheckPromise;
+            return;
+        }
+
+        this.registrationCheckPromise = this.CheckRegistrationInternal();
+
         try {
-            const debug = window.location.origin.includes("localhost") ? "eternaldream" : "";
-            const userid = {
-                owlbearid: BSCACHE.playerId
-            };
-
-            const requestOptions = {
-                method: "POST",
-                headers: new Headers({
-                    "Content-Type": "application/json",
-                    "Authorization": Constants.ANONAUTH,
-                    "x-manuel": debug
-                }),
-                body: JSON.stringify(userid),
-            };
-            const response = await fetch(Constants.CHECKREGISTRATION, requestOptions);
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                // Handle error data
-                console.error("Error:", errorData);
-                return;
-            }
-            const data = await response.json();
-            if (data.Data === "OK") {
-                this.USER_REGISTERED = true;
-            }
+            this.USER_REGISTERED = await this.registrationCheckPromise;
         }
         catch (error) {
-            // Handle errors
             console.error("Error:", error);
+            this.USER_REGISTERED = false;
         }
+        finally {
+            this.registrationCheckPromise = null;
+        }
+    }
+
+    private async CheckRegistrationInternal(): Promise<boolean> {
+        const startTime = performance.now();
+
+        const cachedRegistration = this.GetRegistrationCache();
+        if (this.HasValidRegistrationCache(cachedRegistration)) {
+            this.TrackRegistrationMetricFromCache(cachedRegistration!, 'hit', startTime);
+            return cachedRegistration!.registered;
+        }
+
+        if (Constants.USE_DIRECT_REGISTRATION_LOOKUP) {
+            if (this.IsRegistrationRetryCoolingDown(cachedRegistration)) {
+                this.TrackRegistrationMetricFromCache(cachedRegistration!, 'stale', startTime);
+                return cachedRegistration!.registered;
+            }
+
+            try {
+                const directRegistration = await this.CheckRegistrationDirect();
+                directRegistration.lookupSource = 'direct_supabase';
+                this.SaveRegistrationCache(directRegistration);
+                this.TrackRegistrationMetric({
+                    playerId: this.playerId,
+                    lookupSource: 'direct_supabase',
+                    cacheStatus: cachedRegistration ? 'stale' : 'miss',
+                    result: directRegistration.registered ? 'registered' : 'not_registered',
+                    success: true,
+                    tier: directRegistration.tier,
+                    startTime,
+                });
+                return directRegistration.registered;
+            }
+            catch (error) {
+                console.error('Registration lookup error:', error);
+                const errorMessage = error instanceof Error ? error.message : 'direct_lookup_failed';
+                this.TrackRegistrationMetric({
+                    playerId: this.playerId,
+                    lookupSource: 'direct_supabase',
+                    cacheStatus: cachedRegistration ? 'stale' : 'miss',
+                    result: 'error',
+                    success: false,
+                    errorCode: 'direct_lookup_failed',
+                    errorMessage,
+                    startTime,
+                });
+                this.MarkRegistrationLookupFailure(cachedRegistration);
+
+                if (cachedRegistration) {
+                    this.TrackRegistrationMetricFromCache(cachedRegistration, 'stale', startTime);
+                    return cachedRegistration.registered;
+                }
+            }
+        }
+
+        try {
+            const legacyRegistered = await this.CheckRegistrationLegacy();
+            this.SaveRegistrationCache({
+                playerId: this.playerId,
+                registered: legacyRegistered,
+                tier: cachedRegistration?.tier ?? 'free',
+                lookupSource: 'fallback_legacy_function',
+                checkedAt: Date.now(),
+            });
+            this.TrackRegistrationMetric({
+                playerId: this.playerId,
+                lookupSource: 'fallback_legacy_function',
+                cacheStatus: Constants.USE_DIRECT_REGISTRATION_LOOKUP ? (cachedRegistration ? 'stale' : 'miss') : 'bypass',
+                result: legacyRegistered ? 'registered' : 'not_registered',
+                success: true,
+                tier: cachedRegistration?.tier ?? 'free',
+                startTime,
+            });
+            return legacyRegistered;
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'legacy_lookup_failed';
+            this.TrackRegistrationMetric({
+                playerId: this.playerId,
+                lookupSource: 'fallback_legacy_function',
+                cacheStatus: Constants.USE_DIRECT_REGISTRATION_LOOKUP ? (cachedRegistration ? 'stale' : 'miss') : 'bypass',
+                result: 'error',
+                success: false,
+                errorCode: 'legacy_lookup_failed',
+                errorMessage,
+                startTime,
+            });
+            throw error;
+        }
+    }
+
+    private async CheckRegistrationDirect(): Promise<RegistrationCacheEntry> {
+        const { data, error } = await supabase
+            .from(Constants.REGISTRATION_LOOKUP_VIEW)
+            .select('active,tier,updated_at')
+            .eq('owlbear_id', this.playerId)
+            .maybeSingle();
+
+        if (error) {
+            throw error;
+        }
+
+        return {
+            playerId: this.playerId,
+            registered: Boolean(data?.active),
+            tier: data?.tier ?? 'free',
+            checkedAt: Date.now(),
+        };
+    }
+
+    private async CheckRegistrationLegacy(): Promise<boolean> {
+        const debug = window.location.origin.includes("localhost") ? "eternaldream" : "";
+        const userid = {
+            owlbearid: this.playerId
+        };
+
+        const requestOptions = {
+            method: "POST",
+            headers: new Headers({
+                "Content-Type": "application/json",
+                "Authorization": Constants.ANONAUTH,
+                "x-manuel": debug
+            }),
+            body: JSON.stringify(userid),
+        };
+        const response = await fetch(Constants.CHECKREGISTRATION, requestOptions);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error:", errorData);
+            throw new Error(`Legacy registration request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.Data === "OK";
+    }
+
+    private GetRegistrationCacheKey(): string {
+        return `${Constants.REGISTRATION_CACHE_PREFIX}_${this.playerId}`;
+    }
+
+    private GetRegistrationCache(): RegistrationCacheEntry | null {
+        try {
+            const cachedValue = localStorage.getItem(this.GetRegistrationCacheKey());
+            if (!cachedValue) return null;
+
+            const parsedValue = JSON.parse(cachedValue) as RegistrationCacheEntry;
+            if (parsedValue.playerId !== this.playerId || typeof parsedValue.checkedAt !== 'number') return null;
+            return parsedValue;
+        }
+        catch (error) {
+            console.error('Registration cache parse error:', error);
+            return null;
+        }
+    }
+
+    private HasValidRegistrationCache(cachedRegistration: RegistrationCacheEntry | null): boolean {
+        if (!cachedRegistration) return false;
+
+        const ttl = cachedRegistration.registered
+            ? Constants.REGISTRATION_POSITIVE_TTL_MS
+            : Constants.REGISTRATION_NEGATIVE_TTL_MS;
+
+        return (Date.now() - cachedRegistration.checkedAt) < ttl;
+    }
+
+    private IsRegistrationRetryCoolingDown(cachedRegistration: RegistrationCacheEntry | null): boolean {
+        if (!cachedRegistration?.lastFailureAt) return false;
+        return (Date.now() - cachedRegistration.lastFailureAt) < Constants.REGISTRATION_ERROR_COOLDOWN_MS;
+    }
+
+    private MarkRegistrationLookupFailure(cachedRegistration: RegistrationCacheEntry | null) {
+        if (!cachedRegistration) return;
+
+        this.SaveRegistrationCache({
+            ...cachedRegistration,
+            lastFailureAt: Date.now(),
+        });
+    }
+
+    private SaveRegistrationCache(cachedRegistration: RegistrationCacheEntry) {
+        localStorage.setItem(this.GetRegistrationCacheKey(), JSON.stringify(cachedRegistration));
+    }
+
+    private TrackRegistrationMetricFromCache(cachedRegistration: RegistrationCacheEntry, cacheStatus: CacheStatus, startTime: number) {
+        this.TrackRegistrationMetric({
+            playerId: this.playerId,
+            lookupSource: cachedRegistration.lookupSource ?? 'direct_supabase',
+            cacheStatus,
+            result: cachedRegistration.registered ? 'registered' : 'not_registered',
+            success: true,
+            tier: cachedRegistration.tier,
+            startTime,
+        });
+    }
+
+    private TrackRegistrationMetric(args: {
+        playerId: string;
+        lookupSource: LookupSource;
+        cacheStatus: CacheStatus;
+        result: 'registered' | 'not_registered' | 'error';
+        success: boolean;
+        tier?: string;
+        errorCode?: string;
+        errorMessage?: string;
+        startTime: number;
+    }) {
+        const latencyMs = Math.max(0, Math.round(performance.now() - args.startTime));
+
+        void TrackRegistrationCheckEvent({
+            playerId: args.playerId,
+            lookupSource: args.lookupSource,
+            cacheStatus: args.cacheStatus,
+            result: args.result,
+            success: args.success,
+            latencyMs,
+            tier: args.tier,
+            errorCode: args.errorCode,
+            errorMessage: args.errorMessage,
+        });
     }
 
     /**
