@@ -6,8 +6,7 @@ import { Constants } from './utilities/bsConstants';
 import { Logger } from './utilities/bsLogger';
 import { CreateTooltips } from './utilities/bsTooltips';
 
-class Theatre
-{
+class Theatre {
     public mainWindow = document.getElementById('app') as HTMLDivElement;
 
     public controlToggle = document.getElementById("viewControls") as HTMLButtonElement;
@@ -43,19 +42,16 @@ class Theatre
 
     version: string;
 
-    constructor(version: string)
-    {
+    constructor(version: string) {
         this.version = `THEATRE-${version}`;
         this.localStorageEnabled = Utilities.TestEnvironment();
-        if (!this.localStorageEnabled)
-        {
+        if (!this.localStorageEnabled) {
             this.storageButton.disabled = true;
             this.storageButton.title = "Local Storage is not available";
         }
     }
 
-    public async StartThreatre()
-    {
+    public async StartThreatre() {
         this.patreonContainer?.appendChild(Utilities.GetPatreonButton());
         this.SetupButtons();
         this.SetupHelp();
@@ -64,34 +60,28 @@ class Theatre
         CreateTooltips();
     }
 
-    public SetupHelp()
-    {
+    public SetupHelp() {
         const converter = new showdown.Converter();
         const helpHtml = converter.makeHtml(Constants.MARKDOWNHELP);
         const helpElement = document.getElementById("helpMarkdownContainer") as HTMLDivElement;
         helpElement.innerHTML = helpHtml;
     }
 
-    public SetupButtons()
-    {
+    public SetupButtons() {
         this.messageRange.value = "talk";
         this.messageRangeHolder.style.display = "none";
         this.playerSelectHolder.style.display = "flex";
-        this.messageTypeSelect.onchange = () =>
-        {
-            if (this.messageTypeSelect.value === "bubble")
-            {
+        this.messageTypeSelect.onchange = () => {
+            if (this.messageTypeSelect.value === "bubble") {
                 this.messageRangeHolder.style.display = "flex";
                 this.playerSelectHolder.style.display = "none";
             }
-            else
-            {
+            else {
                 this.messageRangeHolder.style.display = "none";
                 this.playerSelectHolder.style.display = "flex";
             }
         };
-        this.controlToggle.onclick = (e) =>
-        {
+        this.controlToggle.onclick = (e) => {
             e.preventDefault();
             this.controlPanel.style.display = "block";
             this.controlToggle.classList.add("selected");
@@ -103,8 +93,7 @@ class Theatre
             this.helpToggle.classList.remove("selected");
         };
 
-        this.historyToggle.onclick = (e) =>
-        {
+        this.historyToggle.onclick = (e) => {
             e.preventDefault();
             this.controlPanel.style.display = "none";
             this.controlToggle.classList.remove("selected");
@@ -116,8 +105,7 @@ class Theatre
             this.helpToggle.classList.remove("selected");
         };
 
-        this.helpToggle.onclick = (e) =>
-        {
+        this.helpToggle.onclick = (e) => {
             e.preventDefault();
             this.controlPanel.style.display = "none";
             this.controlToggle.classList.remove("selected");
@@ -129,21 +117,18 @@ class Theatre
             this.helpToggle.classList.add("selected");
         };
 
-        this.sendButton.onclick = async (e) =>
-        {
+        this.sendButton.onclick = async (e) => {
             e.preventDefault();
             await this.SendMessage();
         };
-        this.storageButton.onclick = async (e) =>
-        {
+        this.storageButton.onclick = async (e) => {
             e.preventDefault();
-            if (this.localStorageEnabled)
-            {
+            if (this.localStorageEnabled) {
                 // Ensure dialogue cache is loaded before opening modal
                 if (!BSCACHE.dialogueCacheLoaded) {
                     await BSCACHE.LoadDialogueCache();
                 }
-                
+
                 await OBR.modal.open({
                     id: Constants.STORAGEID,
                     url: `/submenu/storage.html?registered=${BSCACHE.USER_REGISTERED ? "true" : "false"}`,
@@ -156,27 +141,21 @@ class Theatre
             }
         }
 
-        if (BSCACHE.playerRole === "GM")
-        {
-            this.talkDistance.onblur = async () =>
-            {
+        if (BSCACHE.playerRole === "GM") {
+            this.talkDistance.onblur = async () => {
                 await OBR.scene.setMetadata({ [`${Constants.EXTENSIONID}/talk`]: this.talkDistance.value });
             };
-            this.whisperDistance.onblur = async () =>
-            {
+            this.whisperDistance.onblur = async () => {
                 await OBR.scene.setMetadata({ [`${Constants.EXTENSIONID}/whisper`]: this.whisperDistance.value });
             };
-            this.yellDistance.onblur = async () =>
-            {
+            this.yellDistance.onblur = async () => {
                 await OBR.scene.setMetadata({ [`${Constants.EXTENSIONID}/yell`]: this.yellDistance.value });
             };
-            this.closeAllPlayerWindows.onclick = async () =>
-            {
+            this.closeAllPlayerWindows.onclick = async () => {
                 await this.CloseAllPlayerWindows();
             }
         }
-        else
-        {
+        else {
             this.talkDistance.disabled = true;
             this.whisperDistance.disabled = true;
             this.yellDistance.disabled = true;
@@ -188,10 +167,8 @@ class Theatre
         this.yellDistance.value = BSCACHE.sceneMetadata[`${Constants.EXTENSIONID}/yell`] as string ?? "10";
     }
 
-    public async CloseAllPlayerWindows()
-    {
-        if (BSCACHE.playerRole !== "GM")
-        {
+    public async CloseAllPlayerWindows() {
+        if (BSCACHE.playerRole !== "GM") {
             await OBR.notification.show("Only the GM can close all player windows.", "ERROR");
             return;
         }
@@ -200,24 +177,20 @@ class Theatre
         await OBR.notification.show("All player windows closed.", "SUCCESS");
     }
 
-    public async SendMessage()
-    {
+    public async SendMessage() {
         const useSelectedToken = this.characterSelect.value === Constants.SELECTEDTOKENOPTION;
         const playerSelection = await OBR.player.getSelection() ?? [];
         const tokenId = useSelectedToken ? playerSelection[0] : this.characterSelect.value;
-        if (!tokenId)
-        {
+        if (!tokenId) {
             return;
         }
 
         const target = BSCACHE.sceneItems.find(item => item.id === tokenId);
 
-        if (!target || !target.image?.url)
-        {
+        if (!target || !target.image?.url) {
             return;
         }
-        if (target.createdUserId !== BSCACHE.playerId && BSCACHE.playerRole !== "GM")
-        {
+        if (target.createdUserId !== BSCACHE.playerId && BSCACHE.playerRole !== "GM") {
             await OBR.notification.show("Cannot send messages for tokens you do not own.", "ERROR");
             return;
         }
@@ -225,14 +198,11 @@ class Theatre
         let message = this.messageTextarea.value.trim();
         const messageType = this.messageTypeSelect.value;
 
-        if (!message)
-        {
-            if (messageType === "story")
-            {
+        if (!message) {
+            if (messageType === "story") {
                 message = target.image.url;
             }
-            else
-            {
+            else {
                 Logger.log("No message has been entered to send.");
                 return;
             }
@@ -254,8 +224,7 @@ class Theatre
 
         let metadata: Metadata;
 
-        if (messageType === "bubble")
-        {
+        if (messageType === "bubble") {
             const bubbleBox: IBubble = {
                 ...baseMetadata,
                 Message: message,
@@ -265,8 +234,7 @@ class Theatre
                 [`${Constants.EXTENSIONID}/bubbleBox`]: bubbleBox
             };
         }
-        else
-        {
+        else {
             const dialogueBox: IDialog = {
                 ...baseMetadata,
                 Message: this.getFormattedMessage(message)
@@ -280,13 +248,11 @@ class Theatre
 
         await OBR.broadcast.sendMessage(Constants.BROADCASTCHANNEL, metadata);
 
-        if (this.viewMessageBox.checked)
-        {
+        if (this.viewMessageBox.checked) {
             this.broadcaster.postMessage(metadata);
             // If you view the message, it should log along the regular pipelines
         }
-        else
-        {
+        else {
             await OBR.notification.show("Message sent", "SUCCESS");
             await BSCACHE.UpdateHistoryLog(metadata, messageType === "bubble");
             // Need to log the 'converted' message for the GM to Rumble if NOT bubble
@@ -295,19 +261,22 @@ class Theatre
         }
     }
 
-    private getFormattedMessage(message: string): string
-    {
-        switch (message)
-        {
+    private getFormattedMessage(message: string): string {
+        switch (message) {
             case "fresh": return Constants.FRESHPRINCE;
             case "test": return Constants.MULTIPAGE;
             default: return message;
         }
     }
 
-    public SetupItemSelect()
-    {
+    public SetupItemSelect() {
         const characterSelect = document.getElementById('CharacterSelect') as HTMLSelectElement;
+
+        // Save current selection BEFORE modifying anything
+        const previousValue = characterSelect.value;
+
+        // Remove only dynamic options, keep the "Use Selected" option
+        // OR rebuild everything and restore the selection afterward
         characterSelect.innerHTML = '';
 
         const option = document.createElement('option');
@@ -315,22 +284,33 @@ class Theatre
         option.text = "Use Selected";
         characterSelect.add(option);
 
-        BSCACHE.sceneItems.forEach(item =>
-        {
+        BSCACHE.sceneItems.forEach(item => {
             if (item.layer === "CHARACTER"
-                && (item.createdUserId === BSCACHE.playerId || BSCACHE.playerRole === "GM"))
-            {
+                && (item.createdUserId === BSCACHE.playerId || BSCACHE.playerRole === "GM")) {
                 const token = item as Image;
-                const option = document.createElement('option');
-                option.value = item.id;
-                option.text = token.text?.plainText ? token.text.plainText : item.name;
-                characterSelect.add(option);
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.text = token.text?.plainText ? token.text.plainText : item.name;
+                characterSelect.add(opt);
             }
         });
+
+        // Restore selection if it still exists
+        if ([...characterSelect.options].some(o => o.value === previousValue)) {
+            characterSelect.value = previousValue;
+        } else {
+            THEATRE.characterSelectLabel.classList.add("glowing-text");
+            THEATRE.characterSelect.classList.add("glowing-text");
+
+            setTimeout(function () {
+                THEATRE.characterSelectLabel.classList.remove("glowing-text");
+                THEATRE.characterSelect.classList.remove("glowing-text");
+            }, 5000);
+        }
     }
 
-    public UpdatePlayerSelect()
-    {
+
+    public UpdatePlayerSelect() {
         const playerSelect = <HTMLSelectElement>document.getElementById("PlayerSelect");
         let lastTarget = playerSelect.value;
 
@@ -343,8 +323,7 @@ class Theatre
         playerSelect.innerHTML = "";
         playerSelect.appendChild(everyoneOption);
 
-        BSCACHE.party.forEach(player =>
-        {
+        BSCACHE.party.forEach(player => {
             let option = document.createElement("option");
             option.setAttribute('value', player.id);
 
@@ -355,8 +334,7 @@ class Theatre
         });
 
         const lastTargetConnected = BSCACHE.party.find(player => player.id === lastTarget);
-        if (!lastTargetConnected && lastTarget && lastTarget !== "0000")
-        {
+        if (!lastTargetConnected && lastTarget && lastTarget !== "0000") {
             let option = document.createElement("option");
             option.setAttribute('value', lastTarget);
 
@@ -369,14 +347,12 @@ class Theatre
             playerSelect.classList.add("glowing-text");
             playerSelect.classList.add("glowing-text");
 
-            setTimeout(function ()
-            {
+            setTimeout(function () {
                 playerSelect.classList.remove("glowing-text");
                 playerSelect.classList.remove("glowing-text");
             }, 5000);
         }
-        else if (lastTarget)
-        {
+        else if (lastTarget) {
             playerSelect.value = lastTarget;
         }
     }

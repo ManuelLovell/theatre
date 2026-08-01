@@ -478,14 +478,6 @@ class BSCache {
 
             THEATRE.SetupItemSelect();
             this.oldSceneItems = this.sceneItems;
-
-            THEATRE.characterSelectLabel.classList.add("glowing-text");
-            THEATRE.characterSelect.classList.add("glowing-text");
-
-            setTimeout(function () {
-                THEATRE.characterSelectLabel.classList.remove("glowing-text");
-                THEATRE.characterSelect.classList.remove("glowing-text");
-            }, 5000);
         }
     }
 
